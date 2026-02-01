@@ -1,0 +1,22 @@
+{
+  "name": "atlas",
+  "version": "1.0.0",
+  "description": "Atlas is a ERP system for small and medium enterprises medicine distributor built with Express.js and React.js. It offers features such as inventory management, sales tracking and customer management",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ERP",
+    "medicine distributor",
+    "inventory management",
+    "sales tracking",
+    "customer management"
+  ],
+  "author": "Sergio Pomárico <sergiodavid21@gmail.com>",
+  "license": "GPL-3.0",
+  "packageManager": "pnpm@10.8.1",
+  "devDependencies": {
+    "turbo": "^2.8.1"
+  }
+}
