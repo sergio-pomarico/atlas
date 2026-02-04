@@ -4,8 +4,7 @@
   "description": "Atlas is a ERP system for small and medium enterprises medicine distributor built with Express.js and React.js. It offers features such as inventory management, sales tracking and customer management",
   "main": "index.js",
   "scripts": {
-    "prepare": "husky",
-    "commitlint": "commitlint --edit",
+    "prepare": "husky init",
     "test": "turbo run test",
     "type-check": "turbo run type-check",
     "build": "turbo run build",
@@ -36,6 +35,7 @@
     "@commitlint/cli": "^19.4.0",
     "@commitlint/config-conventional": "^19.4.0",
     "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
     "turbo": "^2.8.1",
     "ultracite": "7.1.4"
   }
