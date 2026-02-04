@@ -1,0 +1,26 @@
+{
+  "name": "@atlas/api",
+  "version": "1.0.0",
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "build": "tsc --project tsconfig.json && tsc-alias",
+    "dev": "tsx watch --no-warnings -r tsconfig-paths/register src/app.ts",
+    "start": "node ./dist/app.js"
+  },
+  "type": "module",
+  "author": "Sergio Pomárico <sergiodavid21@gmail.com>",
+  "license": "GPL-3.0-only",
+  "packageManager": "pnpm@10.8.1",
+  "dependencies": {
+    "express": "^5.2.1",
+    "@atlas/ts-config": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.2.0",
+    "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
