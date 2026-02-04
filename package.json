@@ -6,7 +6,12 @@
   "scripts": {
     "prepare": "husky",
     "commitlint": "commitlint --edit",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "type-check": "turbo run type-check",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   },
   "keywords": [
     "ERP",
@@ -15,6 +20,14 @@
     "sales tracking",
     "customer management"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+git@github.com:sergio-pomarico/atlas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sergio-pomarico/atlas/issues"
+  },
+  "homepage": "https://github.com/sergio-pomarico/atlas#readme",
   "author": "Sergio Pomárico <sergiodavid21@gmail.com>",
   "license": "GPL-3.0-only",
   "packageManager": "pnpm@10.8.1",
@@ -24,6 +37,6 @@
     "@commitlint/config-conventional": "^19.4.0",
     "husky": "^9.1.7",
     "turbo": "^2.8.1",
-    "ultracite": "7.1.3"
+    "ultracite": "7.1.4"
   }
 }
