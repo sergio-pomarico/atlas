@@ -1,4 +1,4 @@
-import { Server } from "./server.ts";
+import { Server } from "@api/server.ts";
 import { envConfig } from "./shared/config.ts";
 
 (() => {

@@ -1,21 +1,16 @@
 {
   "extends": "@atlas/ts-config/base.json",
   "compilerOptions": {
-    "lib": [],
     "outDir": "./dist",
-    "target": "es2015",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "baseUrl": "./src",
+    "baseUrl": "./",
     "rootDir": "./src",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strictPropertyInitialization": false,
-    "strict": true,
-    "skipLibCheck": true,
-    "paths": {}
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": {
+      "@api/*": ["./src/*"]
+    }
   },
   "exclude": ["node_modules"],
   "include": ["./src/**/*", "./types/**/*"]
