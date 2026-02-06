@@ -1,0 +1,6 @@
+{
+  "extends": "./base.json",
+  "composite": false,
+  "declaration": true,
+  "declarationMap": true
+}
