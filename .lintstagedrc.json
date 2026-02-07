@@ -1,8 +1,4 @@
 {
-  "*.{js,ts,tsx,jsx}": [
-    "pnpm run type-check",
-    "pnpm run check",
-    "pnpm run fix"
-  ],
-  "*.json": "ultracite fix"
+  "*.{js,ts,tsx,jsx}": ["pnpm run check", "pnpm run type-check"],
+  "*.json": "pnpm run fix"
 }
