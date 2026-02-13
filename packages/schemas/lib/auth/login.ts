@@ -1,8 +1,8 @@
 import { z } from "zod";
-import passwordSchema from "../password";
+import passwordSchema from "../password.ts";
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: passwordSchema,
 });
 
