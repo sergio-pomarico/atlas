@@ -9,8 +9,10 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "paths": {
-      "@api/*": ["./src/*"]
-    }
+      "@api/*": ["./src/*"],
+      "@modules/*": ["./src/modules/*"]
+    },
+    "strictNullChecks": true
   },
   "exclude": ["node_modules"],
   "include": ["./src/**/*", "./types/**/*"]
