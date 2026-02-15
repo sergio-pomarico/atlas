@@ -1,3 +1,4 @@
+import { AuthRoutes } from "@api/modules/auth/presentation/route.ts";
 import { Router } from "express";
 
 export class AppRoutes {
@@ -8,6 +9,6 @@ export class AppRoutes {
     this.routes();
   }
   routes(): void {
-    return;
+    this.router.use("/auth", new AuthRoutes().router);
   }
 }
