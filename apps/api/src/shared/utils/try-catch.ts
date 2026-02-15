@@ -1,4 +1,4 @@
-import { Result } from "@api/domain/result.ts";
+import { Result } from "@shared/domain/result.ts";
 
 export async function tryCatch<T, E = Error>(
   promise: Promise<T>

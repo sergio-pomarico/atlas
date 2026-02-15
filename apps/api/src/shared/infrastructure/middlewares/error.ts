@@ -1,5 +1,5 @@
-import AppError from "@api/domain/errors/app.ts";
-import { Logger } from "@api/infrastructure/services/logger.ts";
+import AppError from "@shared/domain/errors/app.ts";
+import { Logger } from "@shared/infrastructure/services/logger.ts";
 import type { NextFunction, Request, Response } from "express";
 
 const logger = Logger.getInstance();

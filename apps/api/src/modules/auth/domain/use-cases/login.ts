@@ -1,7 +1,7 @@
-import { Result } from "@api/domain/result.ts";
-import type { AuthRepository } from "@api/modules/auth/domain/repository.ts";
 import type { UserEntity } from "@atlas/entities/user.ts";
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
+import type { AuthRepository } from "@modules/auth/domain/repository.ts";
+import { Result } from "@shared/domain/result.ts";
 import { inject, injectable } from "inversify";
 import type AuthenticationError from "../error.ts";
 

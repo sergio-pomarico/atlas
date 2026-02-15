@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { AsyncStorageService } from "@api/infrastructure/services/async-storage.ts";
+import { AsyncStorageService } from "@shared/infrastructure/services/async-storage.ts";
 import type { NextFunction, Request, Response } from "express";
 
 const store = new Map<string, string>();

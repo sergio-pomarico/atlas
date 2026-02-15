@@ -1,5 +1,5 @@
-import { Server } from "@api/presentation/server.ts";
-import { envConfig } from "@api/shared/config.ts";
+import { Server } from "@shared/infrastructure/server.ts";
+import { envConfig } from "@shared/utils/config.ts";
 
 (() => {
   main();

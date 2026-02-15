@@ -1,4 +1,4 @@
-import { AsyncStorageService } from "@api/infrastructure/services/async-storage.ts";
+import { AsyncStorageService } from "@shared/infrastructure/services/async-storage.ts";
 
 import type { DestinationStream, Logger as PinoLogger } from "pino";
 import pino, { levels, transport as PinoTransport } from "pino";

@@ -1,5 +1,5 @@
-import AppError from "@api/domain/errors/app.ts";
-import { ErrorCode } from "@api/domain/errors/code.ts";
+import AppError from "@shared/domain/errors/app.ts";
+import { ErrorCode } from "@shared/domain/errors/code.ts";
 
 export default class AuthenticationError extends AppError {
   constructor(

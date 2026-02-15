@@ -4,9 +4,9 @@ import type {
   ServerResponse,
 } from "node:http";
 import { createServer } from "node:http";
-import errorMiddleware from "@api/presentation/middlewares/error.ts";
-import requestIDMiddleware from "@api/presentation/middlewares/request-id.ts";
-import { AppRoutes } from "@api/presentation/routes/index.ts";
+import errorMiddleware from "@shared/infrastructure/middlewares/error.ts";
+import requestIDMiddleware from "@shared/infrastructure/middlewares/request-id.ts";
+import { AppRoutes } from "@shared/infrastructure/routes.ts";
 import express, { type Application } from "express";
 
 export class Server {
