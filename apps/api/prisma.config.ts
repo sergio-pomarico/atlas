@@ -2,7 +2,10 @@
 // npm install --save-dev prisma dotenv
 import "dotenv/config";
 import path from "node:path";
+import process from "node:process";
 import { defineConfig } from "prisma/config";
+
+const { DATABASE_URL } = process.env;
 
 export default defineConfig({
   schema: path.join("src", "shared", "infrastructure", "data", "schema"),
@@ -10,6 +13,6 @@ export default defineConfig({
     path: path.join("src", "shared", "infrastructure", "data", "migrations"),
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: DATABASE_URL,
   },
 });

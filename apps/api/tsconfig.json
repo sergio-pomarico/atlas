@@ -14,5 +14,10 @@
     "strictNullChecks": true
   },
   "exclude": ["node_modules"],
-  "include": ["./src/**/*", "./types/**/*", "./generated/**/*"]
+  "include": [
+    "./src/**/*",
+    "./types/**/*",
+    "./generated/**/*",
+    "./prisma.config.ts"
+  ]
 }
