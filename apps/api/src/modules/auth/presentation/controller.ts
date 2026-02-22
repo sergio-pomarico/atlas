@@ -1,7 +1,7 @@
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import type { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import type { LoginUserUseCase } from "../domain/use-cases/login.ts";
+import type { LoginUserUseCase } from "../application/login-usecase.ts";
 
 @injectable()
 export class AuthController {
