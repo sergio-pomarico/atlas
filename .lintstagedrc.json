@@ -1,4 +1,0 @@
-{
-  "*.{js,ts,tsx,jsx}": ["pnpm run fix"],
-  "*.json": "pnpm run fix"
-}
