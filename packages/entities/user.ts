@@ -1,14 +1,20 @@
-import type { ProfileEntity } from "./profile.ts";
-
 export interface UserEntity {
   readonly id: string;
-  name: string;
   email: string;
   phone: number;
-  verified: boolean;
-  active: boolean;
+  verified?: boolean;
+  readonly sessionId?: string;
+  status: UserStatusType;
+  readonly failedLoginAttempts: number;
   password: string;
-  profile?: ProfileEntity;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export const UserStatus = {
+  INACTIVE: "INACTIVE",
+  ACTIVE: "ACTIVE",
+  BLOCKED: "BLOCKED",
+} as const;
+
+export type UserStatusType = (typeof UserStatus)[keyof typeof UserStatus];

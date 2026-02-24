@@ -21,7 +21,7 @@ export default class AuthenticationError extends AppError {
     return new AuthenticationError(message, description, code, "error", 404);
   }
 
-  static userNotVerified(
+  static userNotVerifiedOrBlocked(
     message: string,
     description: string,
     code: ErrorCode = ErrorCode.FORBIDDEN

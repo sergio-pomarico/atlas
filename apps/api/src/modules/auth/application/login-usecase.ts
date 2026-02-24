@@ -1,10 +1,10 @@
-import type { UserEntity } from "@atlas/entities/user.ts";
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import { Result } from "@shared/domain/result.ts";
 import { inject, injectable } from "inversify";
 import type { PasswordHasher } from "../domain/password-hasher.ts";
+import type { User } from "../domain/user.ts";
 
 @injectable()
 export class LoginUserUseCase {
@@ -20,7 +20,7 @@ export class LoginUserUseCase {
   }
   run = async (
     dto: LoginPayload
-  ): Promise<Result<UserEntity, AuthenticationError>> => {
+  ): Promise<Result<User, AuthenticationError>> => {
     const result = await this.repository.findByEmail(dto.email);
     if (result.error) {
       return Result.err(result.error);
@@ -30,7 +30,16 @@ export class LoginUserUseCase {
       dto.password,
       user.password
     );
+    if (user.isBlocked() || !user.isVerified()) {
+      return Result.err(
+        AuthenticationError.userNotVerifiedOrBlocked(
+          "Invalid credentials",
+          "The provided email or password is incorrect"
+        )
+      );
+    }
     if (!isPasswordValid) {
+      await this.repository.increaseFailedLoginAttempts(user.id);
       return Result.err(
         AuthenticationError.invalidCredentials(
           "Invalid credentials",
