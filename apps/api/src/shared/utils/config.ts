@@ -3,10 +3,12 @@ import process from "node:process";
 
 const __dirname = import.meta.dirname;
 
-process.loadEnvFile(path.resolve(__dirname, "../../.env"));
-const { NODE_ENV, PORT } = process.env;
+process.loadEnvFile(path.resolve(__dirname, "../../../.env"));
+const { NODE_ENV, PORT, SECRET_MANAGER_TOKEN, DATABASE_URL } = process.env;
 
 export const envConfig = () => ({
-  environment: NODE_ENV || "development",
+  environment: NODE_ENV || "dev",
   port: Number.parseInt(PORT ?? "3000", 10),
+  secretToken: SECRET_MANAGER_TOKEN ?? "",
+  databaseUrl: DATABASE_URL ?? "",
 });
