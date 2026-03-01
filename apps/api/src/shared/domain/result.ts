@@ -15,35 +15,35 @@ class ResultException extends Error {
  * @template E - The type of the error value.
  */
 export class Result<T, E> {
-  private readonly _success: boolean;
-  private readonly _error?: E;
-  private readonly _data?: T;
+  readonly isSuccess: boolean;
+  private readonly error?: E;
+  private readonly data?: T;
 
   private constructor(success: boolean, error?: E, data?: T) {
-    this._success = success;
-    this._error = error;
-    this._data = data;
+    this.isSuccess = success;
+    this.error = error;
+    this.data = data;
   }
 
   static success<T, E>(data: T): Result<T, E> {
     return new Result<T, E>(true, undefined, data);
   }
 
-  static err<T, E>(error: E): Result<T, E> {
+  static fail<T, E>(error: E): Result<T, E> {
     return new Result<T, E>(false, error);
   }
 
-  get data(): T {
-    if (!this._success) {
+  getData(): T {
+    if (!this.isSuccess) {
       throw new ResultException("Cannot get data from an error result");
     }
-    return this._data as T;
+    return this.data as T;
   }
 
-  get error(): E {
-    if (this._success) {
+  getError(): E {
+    if (this.isSuccess) {
       throw new ResultException("Cannot get error from a success result");
     }
-    return this._error as E;
+    return this.error as E;
   }
 }

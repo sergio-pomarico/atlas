@@ -16,11 +16,13 @@ export class AuthController {
     res: Response,
     next: NextFunction
   ) => {
+    console.log("Login request received with body:", req.body);
     const result = await this.loginUserUseCase.run(req.body);
-    if (result.error) {
-      next(result.error);
+    console.log("Login use case result:", result);
+    if (!result.isSuccess) {
+      next(result);
     }
-    const { data: user } = result;
+    const user = result.getData();
     res.status(200).json({ user });
   };
 }

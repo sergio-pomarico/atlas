@@ -7,6 +7,6 @@ export async function tryCatch<T, E = Error>(
     const data = await promise;
     return Result.success(data);
   } catch (error) {
-    return Result.err(error as E);
+    return Result.fail(error as E);
   }
 }

@@ -1,5 +1,5 @@
+import type { PasswordHasher } from "@modules/auth/domain/password-hasher.ts";
 import argon2 from "argon2";
-import type { PasswordHasher } from "../domain/password-hasher.ts";
 
 export class ArgonPasswordHasher implements PasswordHasher {
   async hash(password: string): Promise<string> {
@@ -8,7 +8,7 @@ export class ArgonPasswordHasher implements PasswordHasher {
   }
 
   async compare(password: string, hash: string): Promise<boolean> {
-    const isMatch = await argon2.verify(password, hash);
+    const isMatch = await argon2.verify(hash, password);
     return isMatch;
   }
 }
