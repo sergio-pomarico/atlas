@@ -13,6 +13,14 @@ export default class AuthenticationError extends AppError {
     Error.captureStackTrace(this, AuthenticationError);
   }
 
+  static internalServerError(
+    message: string,
+    description: string,
+    code: ErrorCode = ErrorCode.INTERNAL_SERVER
+  ): AuthenticationError {
+    return new AuthenticationError(message, description, code, "error", 500);
+  }
+
   static userNotFound(
     message: string,
     description: string,
