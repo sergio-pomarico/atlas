@@ -39,7 +39,7 @@ export class JWTService {
     );
     return new Promise((resolve) => {
       jwt.sign(
-        payload,
+        { issuer: "atlas-api", audience: "atlas-client", ...payload },
         signingKey.secretValue,
         { ...options, algorithm: "RS256" },
         (err, token) => {

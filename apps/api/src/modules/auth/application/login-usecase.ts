@@ -1,7 +1,6 @@
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
-import type { User } from "@modules/auth/domain/user.ts";
 import { Result } from "@shared/domain/result.ts";
 import type {
   JWTError,
@@ -10,6 +9,10 @@ import type {
 import { tryCatch } from "@shared/utils/try-catch.ts";
 import { inject, injectable } from "inversify";
 import type { PasswordHasher } from "../domain/password-hasher.ts";
+
+export interface LoginResult {
+  accessToken: string;
+}
 
 @injectable()
 export class LoginUserUseCase {
@@ -28,7 +31,7 @@ export class LoginUserUseCase {
   }
   run = async (
     dto: LoginPayload
-  ): Promise<Result<User, AuthenticationError>> => {
+  ): Promise<Result<LoginResult, AuthenticationError>> => {
     const result = await this.repository.findByEmail(dto.email);
     if (!result.isSuccess) {
       return Result.fail(result.getError());
@@ -62,7 +65,7 @@ export class LoginUserUseCase {
           scope: "access",
         },
         "access",
-        { expiresIn: "5m", issuer: "atlas-api", audience: "atlas-client" }
+        { expiresIn: "5m" }
       )
     );
     if (!token.isSuccess) {
@@ -73,7 +76,6 @@ export class LoginUserUseCase {
         )
       );
     }
-    console.log(token.getData());
-    return Result.success(user);
+    return Result.success({ accessToken: token.getData() ?? "" });
   };
 }
