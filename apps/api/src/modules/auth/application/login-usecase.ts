@@ -1,23 +1,30 @@
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
+import type { User } from "@modules/auth/domain/user.ts";
 import { Result } from "@shared/domain/result.ts";
+import type {
+  JWTError,
+  JWTService,
+} from "@shared/infrastructure/services/jwt.ts";
 import { tryCatch } from "@shared/utils/try-catch.ts";
 import { inject, injectable } from "inversify";
 import type { PasswordHasher } from "../domain/password-hasher.ts";
-import type { User } from "../domain/user.ts";
 
 @injectable()
 export class LoginUserUseCase {
   private readonly repository: AuthRepository;
   private readonly passwordHasher: PasswordHasher;
+  private readonly jwtService: JWTService;
 
   constructor(
     @inject("AuthRepository") repository: AuthRepository,
-    @inject("PasswordHasher") passwordHasher: PasswordHasher
+    @inject("PasswordHasher") passwordHasher: PasswordHasher,
+    @inject("JWTService") jwtService: JWTService
   ) {
     this.repository = repository;
     this.passwordHasher = passwordHasher;
+    this.jwtService = jwtService;
   }
   run = async (
     dto: LoginPayload
@@ -27,7 +34,6 @@ export class LoginUserUseCase {
       return Result.fail(result.getError());
     }
     const user = result.getData();
-    console.log(dto.password, user.password);
     const isPasswordValid = await tryCatch<boolean, Error>(
       this.passwordHasher.compare(dto.password, user.password)
     );
@@ -48,6 +54,26 @@ export class LoginUserUseCase {
         )
       );
     }
+    const token = await tryCatch<string | null, JWTError>(
+      this.jwtService.sign(
+        {
+          sub: user.id,
+          email: user.email,
+          scope: "access",
+        },
+        "access",
+        { expiresIn: "5m", issuer: "atlas-api", audience: "atlas-client" }
+      )
+    );
+    if (!token.isSuccess) {
+      return Result.fail(
+        AuthenticationError.internalServerError(
+          "Token generation failed",
+          "An error occurred while generating the authentication token"
+        )
+      );
+    }
+    console.log(token.getData());
     return Result.success(user);
   };
 }
