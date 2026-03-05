@@ -1,16 +1,16 @@
-# Documentation
+# Documentación
 
-Welcome to the Atlas documentation. Here you'll find resources organized by topic.
+Bienvenido a la documentación de Atlas. Aquí encontrarás recursos organizados por tema.
 
-## Design
+## Diseño
 
-- [Design Guidelines](./desing/) - Core design principles and guidelines
-- [Design Documentation](./desing-docs/) - Detailed design specifications and components
+- [Guías de Diseño](./design/) - Principios y guías de diseño fundamentales
+- [Documentación de Diseño](./design-docs/) - Especificaciones detalladas de diseño y componentes
 
-## Getting Started
+## Comenzando
 
-Learn the basics and explore our design system.
+Aprende los conceptos básicos y explora nuestro sistema de diseño.
 
-## Contributing
+## Contribuyendo
 
-Found an issue or want to improve the docs? Contributions are welcome!
+¿Encontraste un problema o quieres mejorar la documentación? ¡Las contribuciones son bienvenidas!
