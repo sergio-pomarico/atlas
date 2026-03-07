@@ -1,11 +1,14 @@
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  verified  Boolean    @default(false) @map("is_verified")
-  status    UserStatus @default(INACTIVE) @map("status")
-  password  String
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @default(now()) @map("updated_at")
+  id                  String     @id @default(uuid())
+  email               String     @unique
+  phone               String?    @unique
+  verified            Boolean    @default(false) @map("is_verified")
+  status              UserStatus @default(INACTIVE) @map("status")
+  password            String
+  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
+  createdAt           DateTime   @default(now()) @map("created_at")
+  updatedAt           DateTime   @default(now()) @map("updated_at")
+  session             Session?
 }
 
 enum UserStatus {

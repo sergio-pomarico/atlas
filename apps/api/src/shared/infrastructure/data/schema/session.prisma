@@ -1,0 +1,12 @@
+model Session {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  active      Boolean  @default(false)
+  lastLogin   DateTime @default(now()) @map("last_login")
+  lastLoginIp String?  @map("last_login_ip")
+  userAgent   String?  @map("user_agent")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+}
