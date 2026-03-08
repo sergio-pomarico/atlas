@@ -146,3 +146,6 @@ turbo.log
 
 # Prisma client
 **/generated/**
+
+# Infisical config file
+.infisical.json

@@ -21,13 +21,16 @@ const errorMiddleware = (
       });
       res.status(err.statusCode).json({
         ...omit(err, ["stack", "statusCode"]),
+        message: "internal server error",
         error: {
           code: err.error.code,
           description: "An unexpected error has occurred",
         },
       });
     }
-    res.status(err.statusCode).json(omit(err, ["stack", "statusCode"]));
+    res
+      .status(err.statusCode)
+      .json({ ...omit(err, ["stack", "statusCode"]), message: err.message });
   }
 };
 

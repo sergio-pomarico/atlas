@@ -10,7 +10,7 @@ export class SecretMangerService {
     this.client.auth().accessToken(envConfig().secretToken);
   }
 
-  static getIntance(): SecretMangerService {
+  static getInstance(): SecretMangerService {
     if (!SecretMangerService.instance) {
       SecretMangerService.instance = new SecretMangerService();
     }
@@ -20,7 +20,7 @@ export class SecretMangerService {
   async getSecret(key: string): Promise<Secret> {
     const secret = await this.client.secrets().getSecret({
       environment: envConfig().environment,
-      projectId: "48f6cdd7-7e10-40f6-9662-f82e6847cd60",
+      projectId: envConfig().infisicalProjectId,
       secretName: key,
     });
     return secret;

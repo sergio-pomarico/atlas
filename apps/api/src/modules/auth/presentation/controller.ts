@@ -23,6 +23,7 @@ export class AuthController {
     const result = await this.loginUserUseCase.run(req.body);
     if (!result.isSuccess) {
       next(result.getError());
+      return;
     }
     const credentials = result.getData();
     res.status(200).json({

@@ -19,7 +19,7 @@ export class JWTService {
   private static instance: JWTService;
   private readonly secretManager: SecretMangerService;
   private constructor() {
-    this.secretManager = SecretMangerService.getIntance();
+    this.secretManager = SecretMangerService.getInstance();
   }
 
   static getInstance(): JWTService {
