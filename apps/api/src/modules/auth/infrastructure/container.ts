@@ -8,10 +8,14 @@ import { AuthController } from "@modules/auth/presentation/controller.ts";
 import { JWTService } from "@shared/infrastructure/services/jwt.ts";
 import type { Logger } from "@shared/infrastructure/services/logger.ts";
 import { Logger as LoggerImpl } from "@shared/infrastructure/services/logger.ts";
+import { PrismaService } from "@shared/infrastructure/services/prisma.ts";
 import { Container } from "inversify";
 
 const container = new Container();
 
+container
+  .bind<PrismaService>("PrismaService")
+  .toConstantValue(PrismaService.getInstance());
 container.bind<Logger>("Logger").toConstantValue(LoggerImpl.getInstance());
 container.bind<AuthController>("AuthController").to(AuthController);
 container.bind<LoginUserUseCase>("LoginUserUseCase").to(LoginUserUseCase);

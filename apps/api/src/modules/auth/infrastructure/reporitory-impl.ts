@@ -3,17 +3,24 @@ import AuthenticationError from "@modules/auth/domain/error.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import { User } from "@modules/auth/domain/user.ts";
 import { Result } from "@shared/domain/result.ts";
-import prisma, { type PrismaError } from "@shared/infrastructure/data/db.ts";
+import type {
+  PrismaError,
+  PrismaService,
+} from "@shared/infrastructure/services/prisma.ts";
 import { tryCatch } from "@shared/utils/try-catch.ts";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 
 @injectable()
 export class AuthRepositoryImpl implements AuthRepository {
+  private readonly prismaService: PrismaService;
+  constructor(@inject("PrismaService") prismaService: PrismaService) {
+    this.prismaService = prismaService;
+  }
   increaseFailedLoginAttempts = async (
     userId: string
   ): Promise<Result<void, AuthenticationError>> => {
     const result = await tryCatch<UserEntity | null, AuthenticationError>(
-      prisma.user.findUnique({
+      this.prismaService.getClient().user.findUnique({
         where: { id: userId },
       }) as Promise<UserEntity | null>
     );
@@ -32,7 +39,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     }
     user.incrementFailedLoginAttempts();
     await tryCatch<UserEntity, PrismaError>(
-      prisma.user.update({
+      this.prismaService.getClient().user.update({
         where: { id: userId },
         data: user.toObject(),
       }) as Promise<UserEntity>
@@ -43,7 +50,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     email: string
   ): Promise<Result<User, AuthenticationError>> => {
     const result = await tryCatch<UserEntity | null, PrismaError>(
-      prisma.user.findUniqueOrThrow({
+      this.prismaService.getClient().user.findUniqueOrThrow({
         where: { email },
       }) as Promise<UserEntity | null>
     );
