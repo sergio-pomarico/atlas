@@ -18,6 +18,7 @@
     "./src/**/*",
     "./types/**/*",
     "./generated/**/*",
-    "./prisma.config.ts"
+    "./prisma.config.ts",
+    "./scripts/migrate.ts"
   ]
 }

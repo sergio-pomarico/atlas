@@ -5,8 +5,13 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "build": "tsc --project tsconfig.json && tsc-alias",
-    "dev": "tsx watch --no-warnings -r tsconfig-paths/register src/app.ts",
-    "start": "node ./dist/app.js"
+    "dev": "NODE_ENV=dev tsx watch --no-warnings -r tsconfig-paths/register src/app.ts",
+    "start": "NODE_ENV=prod node ./dist/app.js",
+    "db:migrate": "tsx -r tsconfig-paths/register src/scripts/migrate.ts migrate dev",
+    "db:migrate:deploy": "NODE_ENV=prod tsx -r tsconfig-paths/ripts/migrate.ts migrate deploy",
+    "db:migrate:status": "tsx scripts/migrate.ts migrate status",
+    "db:push": "tsx scripts/migrate.ts db push",
+    "db:studio": "tsx scripts/migrate.ts studio"
   },
   "type": "module",
   "author": "Sergio Pomárico <sergiodavid21@gmail.com>",
