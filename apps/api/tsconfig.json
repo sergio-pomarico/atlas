@@ -19,6 +19,7 @@
     "./types/**/*",
     "./generated/**/*",
     "./prisma.config.ts",
-    "./scripts/migrate.ts"
+    "./scripts/migrate.ts",
+    "setup-tests.ts"
   ]
 }

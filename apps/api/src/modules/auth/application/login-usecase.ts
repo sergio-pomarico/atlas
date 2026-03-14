@@ -37,9 +37,6 @@ export class LoginUserUseCase {
       return Result.fail(result.getError());
     }
     const user = result.getData();
-    const isPasswordValid = await tryCatch<boolean, Error>(
-      this.passwordHasher.compare(dto.password, user.password)
-    );
     if (user.isBlocked() || !user.isVerified()) {
       return Result.fail(
         AuthenticationError.userNotVerifiedOrBlocked(
@@ -48,7 +45,18 @@ export class LoginUserUseCase {
         )
       );
     }
-    if (!isPasswordValid) {
+    const isPasswordValid = await tryCatch<boolean, Error>(
+      this.passwordHasher.compare(dto.password, user.password)
+    );
+    if (!isPasswordValid.isSuccess) {
+      return Result.fail(
+        AuthenticationError.internalServerError(
+          "Password validation failed",
+          "An error occurred while validating the password"
+        )
+      );
+    }
+    if (!isPasswordValid.getData()) {
       await this.repository.increaseFailedLoginAttempts(user.id);
       return Result.fail(
         AuthenticationError.invalidCredentials(

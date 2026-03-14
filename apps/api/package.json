@@ -11,7 +11,8 @@
     "db:migrate:deploy": "NODE_ENV=prod tsx -r tsconfig-paths/ripts/migrate.ts migrate deploy",
     "db:migrate:status": "tsx scripts/migrate.ts migrate status",
     "db:push": "tsx scripts/migrate.ts db push",
-    "db:studio": "tsx scripts/migrate.ts studio"
+    "db:studio": "tsx scripts/migrate.ts studio",
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
   },
   "type": "module",
   "author": "Sergio Pomárico <sergiodavid21@gmail.com>",
@@ -34,11 +35,14 @@
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@jest/globals": "^30.3.0",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.2.0",
     "@types/pg": "^8.16.0",
+    "jest": "^30.3.0",
     "prisma": "^7.4.0",
+    "ts-jest": "^29.4.6",
     "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
