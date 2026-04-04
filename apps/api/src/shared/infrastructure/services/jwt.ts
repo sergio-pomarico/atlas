@@ -1,7 +1,7 @@
 import { SecretMangerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
 
-type Scope = "access" | "mfa" | "refresh";
+export type Scope = "access" | "mfa" | "refresh";
 
 export type JWTError = jwt.JsonWebTokenError | jwt.TokenExpiredError;
 
