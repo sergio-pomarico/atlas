@@ -1,79 +1,85 @@
 # Atlas
 
-## 📋 Description
+## 📋 Descripción
 
-Atlas is an enterprise resource planning (ERP) system built specifically for medicine distributors. It streamlines operations through integrated features for inventory management, sales tracking, and customer relationship management.
+Atlas es un sistema de planificación de recursos empresariales (ERP) construido específicamente para distribuidoras de medicamentos. Optimiza las operaciones mediante funciones integradas para la gestión de inventario, seguimiento de ventas y gestión de relaciones con los clientes (CRM).
 
-## 🏗️ Architecture
+## 🏗️ Arquitectura
 
-This project uses a **monorepo structure** with Turbo for task orchestration:
+Este proyecto utiliza una **estructura de monorepo** con Turbo para la orquestación de tareas:
 
 ```
 atlas/
-├── apps/              # Backend and frontend apps
-├── packages/          # Shared packages and libraries
-├── docs/              # Documentation
-└── turbo.json         # Monorepo configuration
+├── apps/              # Aplicaciones de Backend y Frontend
+├── packages/          # Paquetes y librerías compartidas
+├── docs/              # Documentación
+└── turbo.json         # Configuración del monorepo
 ```
 
-### Technology Stack
+### Tecnologías
 
 **Backend:**
 
-- Node.js with Express.js
-- TypeScript for type safety
-- Prisma ORM for database management
+- Node.js con Express.js
+- TypeScript para tipado estático
+- Prisma ORM para el manejo de base de datos
 - PostgreSQL
 
 **Frontend:**
 
-- React.js with TypeScript
-- Tailwind CSS and shadcn/ui
+- React.js con TypeScript
+- Tailwind CSS y shadcn/ui
 - Zustand
 - TanStack query
 - TanStack Router
 
 **DevOps & Build:**
 
-- pnpm for package management
-- Turbo for monorepo task orchestration
-- Docker support (optional)
+- pnpm para la gestión de paquetes
+- Turbo para la orquestación del monorepo
+- Soporte para Docker (opcional)
 
-## 🚀 Getting Started
+## 🚀 Empezando
 
-### Prerequisites
+### Prerrequisitos
 
 - Node.js >= 20.x
 - pnpm >= 10.8.1
 
-### Installation
+### Instalación
 
-1. **Clone the repository**
+1. **Clonar el repositorio**
 
    ```bash
-   git clone <repository-url>
+   git clone <url-del-repositorio>
    cd atlas
    ```
 
-2. **Install dependencies**
+2. **Instalar dependencias**
 
    ```bash
    pnpm install
    ```
 
-### Development
+### Gestión de Secretos
 
-Start the development server for all applications:
+Este proyecto utiliza **Infisical** para gestionar de forma segura los secretos (como la conexión a la base de datos y otras API keys). Para saber cómo configurar tus credenciales y usar los comandos de Prisma sin exponer la `DATABASE_URL`, revisa la documentación detallada:
+
+👉 **[Guía de Gestión de Secretos con Infisical](docs/backend/infisical-secrets.md)**
+
+### Desarrollo
+
+Inicia el servidor de desarrollo para todas las aplicaciones:
 
 ```bash
 pnpm run dev
 ```
 
-This command runs the development mode for both frontend and backend applications concurrently using Turbo.
+Este comando ejecuta el modo de desarrollo para las aplicaciones frontend y backend de forma concurrente utilizando Turbo.
 
 ### Build
 
-Build all applications and packages:
+Compila todas las aplicaciones y paquetes:
 
 ```bash
 pnpm run build
@@ -81,7 +87,7 @@ pnpm run build
 
 ### Testing
 
-Run the test suite:
+Ejecuta las pruebas:
 
 ```bash
 pnpm run test
@@ -94,41 +100,41 @@ pnpm run lint
 pnpm run typecheck
 ```
 
-## 🤝 Contributing
+## 🤝 Contribuir
 
-We welcome contributions! Please follow these guidelines:
+¡Agradecemos las contribuciones! Por favor, sigue estas pautas:
 
-1. Create a feature branch (`git checkout -b feature/amazing-feature`)
-2. Commit your changes using Conventional Commits (examples: `feat(api): add stock endpoint`, `fix(ui): resolve modal crash`)
-3. Push to the branch (`git push origin feature/amazing-feature`)
-4. Open a Pull Request
+1. Crea una rama de la característica (`git checkout -b feature/nueva-caracteristica`)
+2. Haz commit de tus cambios usando Conventional Commits (ejemplos: `feat(api): agregar endpoint de stock`, `fix(ui): resolver error del modal`)
+3. Sube la rama (`git push origin feature/nueva-caracteristica`)
+4. Abre un Pull Request
 
 ### Conventional Commits
 
-Commit messages must follow this pattern:
+Los mensajes de los commits deben seguir este patrón:
 
 ```
-<type>(optional scope): <description>
+<tipo>(alcance opcional): <descripción>
 
-[optional body]
+[cuerpo opcional]
 
-[optional footer(s)]
+[pie(s) de página opcional(es)]
 ```
 
-Common types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `build`, `perf`, `style`.
+Tipos comunes: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `build`, `perf`, `style`.
 
-Husky + commitlint will validate messages on commit.
+Husky + commitlint validarán los mensajes al momento de hacer el commit.
 
-## 📝 License
+## 📝 Licencia
 
-This project is licensed under the GPL 3.0 License - see the [LICENSE](LICENSE) file for details.
+Este proyecto está bajo la Licencia GPL 3.0 - revisa el archivo [LICENSE](LICENSE) para más detalles.
 
-## 👤 Author
+## 👤 Autor
 
 **Sergio Pomárico**
 
 - Email: sergiodavid21@gmail.com
 
-## 📞 Support
+## 📞 Soporte
 
-For issues, feature requests, or questions, please open an issue in the repository.
+Para reportar problemas, solicitar nuevas características o hacer preguntas, por favor abre un _issue_ en el repositorio.
