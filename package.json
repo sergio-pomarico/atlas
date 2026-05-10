@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky",
+    "changeset": "changeset",
+    "changeset:version": "changeset version",
     "test": "turbo run test",
     "type-check": "turbo run type-check",
     "build": "turbo run build",
@@ -32,6 +34,7 @@
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
+    "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^19.4.0",
     "@commitlint/config-conventional": "^19.4.0",
     "husky": "^9.1.7",
