@@ -5,5 +5,8 @@
     "parser": {
       "unsafeParameterDecoratorsEnabled": true
     }
+  },
+  "files": {
+    "includes": ["!**/templates", "!**/dist", "!**/build"]
   }
 }

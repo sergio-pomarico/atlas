@@ -1,13 +1,19 @@
 {
   "extends": "./base.json",
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "es2023",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
     "sourceMap": true,
     "resolveJsonModule": true,
-    "noEmit": true
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx"
   },
   "exclude": ["node_modules"]
 }
