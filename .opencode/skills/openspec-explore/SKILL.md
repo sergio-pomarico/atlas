@@ -105,7 +105,7 @@ If the user mentions a change or you detect one is relevant:
 1. **Read existing artifacts for context**
    - `openspec/changes/<name>/proposal.md`
    - `openspec/changes/<name>/design.md`
-   - `openspec/changes/<name>/tasks.md`
+   - `openspec/changes/<name>/linear.json` (task IDs)
    - etc.
 
 2. **Reference them naturally in conversation**
@@ -120,7 +120,7 @@ If the user mentions a change or you detect one is relevant:
     | Requirement changed        | `specs/<capability>/spec.md` |
     | Design decision made       | `design.md`                  |
     | Scope changed              | `proposal.md`                |
-    | New work identified        | `tasks.md`                   |
+    | New work identified        | Linear issues + `openspec/changes/<name>/linear.json` |
     | Assumption invalidated     | Relevant artifact              |
 
    Example offers:

@@ -7,7 +7,7 @@ Propose a new change - create the change and generate all artifacts in one step.
 I'll create a change with artifacts:
 - proposal.md (what & why)
 - design.md (how)
-- tasks.md (implementation steps)
+- Linear issues (implementation tasks) + openspec/changes/<name>/linear.json
 
 When ready to implement, run /opsx-apply
 
@@ -16,6 +16,19 @@ When ready to implement, run /opsx-apply
 **Input**: The argument after `/opsx-propose` is the change name (kebab-case), OR a description of what the user wants to build.
 
 **Steps**
+
+0. **Ensure Linear config exists**
+
+   Check for `openspec/linear.yml`.
+   - If it exists, read `teamId` and `projectId`
+   - If it does not exist, use the **AskUserQuestion tool** (open-ended) to ask for:
+     - Linear `teamId`
+     - Linear `projectId`
+   - Write `openspec/linear.yml` with:
+     ```yaml
+     teamId: "<TEAM_ID>"
+     projectId: "<PROJECT_ID>"
+     ```
 
 1. **If no input provided, ask what they want to build**
 
@@ -46,11 +59,11 @@ When ready to implement, run /opsx-apply
 
    Loop through artifacts in dependency order (artifacts with no pending dependencies first):
 
-   a. **For each artifact that is `ready` (dependencies satisfied)**:
-      - Get instructions:
-        ```bash
-        openspec instructions <artifact-id> --change "<name>" --json
-        ```
+    a. **For each artifact that is `ready` (dependencies satisfied)**:
+       - Get instructions:
+         ```bash
+         openspec instructions <artifact-id> --change "<name>" --json
+         ```
       - The instructions JSON includes:
         - `context`: Project background (constraints for you - do NOT include in output)
         - `rules`: Artifact-specific rules (constraints for you - do NOT include in output)
@@ -58,15 +71,32 @@ When ready to implement, run /opsx-apply
         - `instruction`: Schema-specific guidance for this artifact type
         - `outputPath`: Where to write the artifact
         - `dependencies`: Completed artifacts to read for context
-      - Read any completed dependency files for context
-      - Create the artifact file using `template` as the structure
-      - Apply `context` and `rules` as constraints - but do NOT copy them into the file
-      - Show brief progress: "Created <artifact-id>"
+       - Read any completed dependency files for context
+       - Create the artifact file using `template` as the structure
+       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
+       - Show brief progress: "Created <artifact-id>"
 
-   b. **Continue until all `applyRequires` artifacts are complete**
-      - After creating each artifact, re-run `openspec status --change "<name>" --json`
-      - Check if every artifact ID in `applyRequires` has `status: "done"` in the artifacts array
-      - Stop when all `applyRequires` artifacts are done
+       **Special case: tasks artifact**
+       - Do NOT write `tasks.md`
+       - Use Linear MCP tools to create issues for the tasks
+       - Use labels:
+         - `openspec-change:<name>`
+         - `openspec-task-index:<n>`
+       - Store created issue IDs in `openspec/changes/<name>/linear.json`
+         ```json
+         {
+           "change": "<name>",
+           "issues": [
+             { "index": 1, "id": "<ISSUE_ID>", "title": "<TITLE>" }
+           ]
+         }
+         ```
+       - Use the MCP tool list (e.g. `/mcp` in your client) to discover the exact tool names for create/update
+
+    b. **Continue until all `applyRequires` artifacts are complete**
+       - After creating each artifact, re-run `openspec status --change "<name>" --json`
+       - Check if every artifact ID in `applyRequires` has `status: "done"` in the artifacts array
+       - Stop when all `applyRequires` artifacts are done
 
    c. **If an artifact requires user input** (unclear context):
       - Use **AskUserQuestion tool** to clarify

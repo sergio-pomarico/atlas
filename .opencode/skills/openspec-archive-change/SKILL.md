@@ -39,16 +39,19 @@ Archive a completed change in the experimental workflow.
 
 3. **Check task completion status**
 
-   Read the tasks file (typically `tasks.md`) to check for incomplete tasks.
+   Use Linear MCP to check for incomplete tasks.
 
-   Count tasks marked with `- [ ]` (incomplete) vs `- [x]` (complete).
+   - Read `openspec/linear.yml` for `teamId` and `projectId`
+   - If missing, ask the user for the values and write the file
+   - If `openspec/changes/<name>/linear.json` exists, use it for issue IDs
+   - Otherwise, query Linear issues by label `openspec-change:<name>`
+
+   Count open vs closed issues (or `openspec-status:pending` vs `openspec-status:done`).
 
    **If incomplete tasks found:**
    - Display warning showing count of incomplete tasks
    - Use **AskUserQuestion tool** to confirm user wants to proceed
    - Proceed if user confirms
-
-   **If no tasks file exists:** Proceed without task-related warning.
 
 4. **Assess delta spec sync state**
 

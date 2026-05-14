@@ -46,7 +46,7 @@ Implement tasks from an OpenSpec change.
 
    Read every file path listed under `contextFiles` from the apply instructions output.
    The files depend on the schema being used:
-   - **spec-driven**: proposal, specs, design, tasks
+   - **spec-driven**: proposal, specs, design, tasks (if tasks artifact exists, it may not be a file)
    - Other schemas: follow the contextFiles from CLI output
 
 5. **Show current progress**
@@ -59,11 +59,19 @@ Implement tasks from an OpenSpec change.
 
 6. **Implement tasks (loop until done or blocked)**
 
+   **Before starting tasks**
+   - Read `openspec/linear.yml` for `teamId` and `projectId`
+   - If missing, ask the user for the values and write the file
+   - Load task list from Linear:
+     - If `openspec/changes/<name>/linear.json` exists, use it as the source of issue IDs
+     - Otherwise, query Linear issues by label `openspec-change:<name>` and build a local list
+
    For each pending task:
    - Show which task is being worked on
    - Make the code changes required
    - Keep changes minimal and focused
-   - Mark task complete in the tasks file: `- [ ]` → `- [x]`
+   - Mark task complete in Linear (update issue state or add label `openspec-status:done`)
+   - Update `openspec/changes/<name>/linear.json` with the new status if needed
    - Continue to next task
 
    **Pause if:**
@@ -137,7 +145,7 @@ What would you like to do?
 - If task is ambiguous, pause and ask before implementing
 - If implementation reveals issues, pause and suggest artifact updates
 - Keep code changes minimal and scoped to each task
-- Update task checkbox immediately after completing each task
+- Update Linear issue immediately after completing each task
 - Pause on errors, blockers, or unclear requirements - don't guess
 - Use contextFiles from CLI output, don't assume specific file names
 
