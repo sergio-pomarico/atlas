@@ -73,13 +73,29 @@ Implement tasks from an OpenSpec change.
      - If `openspec/changes/<name>/linear.json` exists, use it as the source of issue IDs
      - Otherwise, query Linear issues by label `openspec-change:<name>` and build a local list
 
-   For each pending task:
-   - Show which task is being worked on
-   - Make the code changes required
-   - Keep changes minimal and focused
-   - Mark task complete in Linear (update issue state or add label `openspec-status:done`)
-   - Update `openspec/changes/<name>/linear.json` with the new status if needed
-   - Continue to next task
+    For each pending task:
+    - Show which task is being worked on
+    - Create or switch to a per-issue branch from `main` using `feat/ATL-#` (ATL-# is the issue ID)
+    - Make the code changes required
+    - Keep changes minimal and focused
+    - Run `/make-commit` after completing the task (commit and push)
+    - Create a PR for the task using the template at `.github/pull_request_template.md`:
+      - Title: `feat: <issue title>`
+      - Fill the template:
+        - Summary: issue title + brief scope
+        - Rationale: brief summary from `proposal.md` or the task if more specific
+        - Design Documentation: link `openspec/changes/<name>/design.md` if it exists, else `N/A`
+        - Changes: high-level bullet list (no file lists)
+        - Impact: short statement (use "No impact expected" if applicable)
+        - Testing: list tests run or `Not run (not requested)`
+        - Screenshots/Video: `N/A` if not applicable
+        - Checklist: only check items with evidence
+        - Additional Notes: link to the Linear issue + OpenSpec change
+      - Create with `gh pr create` using base `main` and head `feat/ATL-#`
+    - Store the PR URL in `openspec/changes/<name>/linear.json` for the task (e.g., `prUrl`)
+    - Mark task complete in Linear (update issue state or add label `openspec-status:done`)
+    - Update `openspec/changes/<name>/linear.json` with the new status if needed
+    - Continue to next task
 
    **Pause if:**
    - Task is unclear → ask for clarification

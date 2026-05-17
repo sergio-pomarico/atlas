@@ -85,19 +85,51 @@ When ready to implement, run /opsx-apply
 
        **Special case: tasks artifact**
        - Do NOT write `tasks.md`
-       - Use Linear MCP tools to create issues for the tasks
-       - Use labels:
-         - `openspec-change:<name>`
-         - `openspec-task-index:<n>`
-       - Store created issue IDs in `openspec/changes/<name>/linear.json`
+       - Ensure a Linear project exists for this change:
+         - Project name: `<change-name>`
+         - Description: brief summary of `proposal.md`
+         - If a project with the same name exists, reuse it
+         - Suggested MCP flow:
+           - Search projects by name
+           - If found, reuse its `id`
+           - If not found, create the project with name + description
+       - Store the project ID in `openspec/changes/<name>/linear.json`
          ```json
          {
            "change": "<name>",
+           "project": { "id": "<PROJECT_ID>", "name": "<change-name>" },
            "issues": [
              { "index": 1, "id": "<ISSUE_ID>", "title": "<TITLE>" }
            ]
          }
          ```
+       - Use Linear MCP tools to create issues for the tasks, associated to the project
+       - Use a fixed issue template:
+         ```md
+         ## Context
+         <short context from proposal.md>
+
+         ## Scope
+         - <in-scope item>
+         - ...
+
+         ## Non-Goals
+         - None
+         - ...
+
+         ## Acceptance
+         - [ ] <criterion>
+         - [ ] <criterion>
+
+         ## Notes
+         - design: openspec/changes/<name>/design.md
+         ```
+       - Issue title format: Verb + object
+       - Acceptance criteria are required for every issue
+       - Non-Goals are required for every issue (use "None" if empty)
+       - Use labels:
+         - `openspec-change:<name>`
+         - `openspec-task-index:<n>`
        - Use the MCP tool list (e.g. `/mcp` in your client) to discover the exact tool names for create/update
 
    b. **Continue until all `applyRequires` artifacts are complete**

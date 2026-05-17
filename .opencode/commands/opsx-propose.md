@@ -46,12 +46,12 @@ When ready to implement, run /opsx-apply
    This creates a scaffolded change at `openspec/changes/<name>/` with `.openspec.yaml`.
 
 3. **Get the artifact build order**
-   ```bash
-   openspec status --change "<name>" --json
-   ```
-   Parse the JSON to get:
-   - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
-   - `artifacts`: list of all artifacts with their status and dependencies
+    ```bash
+    openspec status --change "<name>" --json
+    ```
+    Parse the JSON to get:
+    - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
+    - `artifacts`: list of all artifacts with their status and dependencies
 
 4. **Create artifacts in sequence until apply-ready**
 
@@ -59,11 +59,11 @@ When ready to implement, run /opsx-apply
 
    Loop through artifacts in dependency order (artifacts with no pending dependencies first):
 
-    a. **For each artifact that is `ready` (dependencies satisfied)**:
-       - Get instructions:
-         ```bash
-         openspec instructions <artifact-id> --change "<name>" --json
-         ```
+     a. **For each artifact that is `ready` (dependencies satisfied)**:
+        - Get instructions:
+          ```bash
+          openspec instructions <artifact-id> --change "<name>" --json
+          ```
       - The instructions JSON includes:
         - `context`: Project background (constraints for you - do NOT include in output)
         - `rules`: Artifact-specific rules (constraints for you - do NOT include in output)
@@ -78,19 +78,51 @@ When ready to implement, run /opsx-apply
 
        **Special case: tasks artifact**
        - Do NOT write `tasks.md`
-       - Use Linear MCP tools to create issues for the tasks
-       - Use labels:
-         - `openspec-change:<name>`
-         - `openspec-task-index:<n>`
-       - Store created issue IDs in `openspec/changes/<name>/linear.json`
+       - Ensure a Linear project exists for this change:
+         - Project name: `<change-name>`
+         - Description: brief summary of `proposal.md`
+         - If a project with the same name exists, reuse it
+         - Suggested MCP flow:
+           - Search projects by name
+           - If found, reuse its `id`
+           - If not found, create the project with name + description
+       - Store the project ID in `openspec/changes/<name>/linear.json`
          ```json
          {
            "change": "<name>",
+           "project": { "id": "<PROJECT_ID>", "name": "<change-name>" },
            "issues": [
              { "index": 1, "id": "<ISSUE_ID>", "title": "<TITLE>" }
            ]
          }
          ```
+       - Use Linear MCP tools to create issues for the tasks, associated to the project
+       - Use a fixed issue template:
+         ```md
+         ## Context
+         <short context from proposal.md>
+
+         ## Scope
+         - <in-scope item>
+         - ...
+
+         ## Non-Goals
+         - None
+         - ...
+
+         ## Acceptance
+         - [ ] <criterion>
+         - [ ] <criterion>
+
+         ## Notes
+         - design: openspec/changes/<name>/design.md
+         ```
+       - Issue title format: Verb + object
+       - Acceptance criteria are required for every issue
+       - Non-Goals are required for every issue (use "None" if empty)
+       - Use labels:
+         - `openspec-change:<name>`
+         - `openspec-task-index:<n>`
        - Use the MCP tool list (e.g. `/mcp` in your client) to discover the exact tool names for create/update
 
     b. **Continue until all `applyRequires` artifacts are complete**
