@@ -61,7 +61,7 @@ describe("LoginUserUseCase", () => {
     loginUserUseCase = new LoginUserUseCase(
       mockAuthRepository,
       mockPasswordHasher,
-      mockJWTService as unknown as JWTService,
+      mockJWTService as unknown as JWTService
     );
   });
 
@@ -73,7 +73,7 @@ describe("LoginUserUseCase", () => {
     it("should return a success result with an access token on valid credentials", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockResolvedValue("mock.jwt.token");
@@ -89,7 +89,7 @@ describe("LoginUserUseCase", () => {
     it("should look up the user by the provided email", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockResolvedValue("mock.jwt.token");
@@ -99,7 +99,7 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(mockAuthRepository.findByEmail).toHaveBeenCalledWith(
-        "test@example.com",
+        "test@example.com"
       );
       expect(mockAuthRepository.findByEmail).toHaveBeenCalledTimes(1);
     });
@@ -107,7 +107,7 @@ describe("LoginUserUseCase", () => {
     it("should compare the plain password against the stored hash", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockResolvedValue("mock.jwt.token");
@@ -118,14 +118,14 @@ describe("LoginUserUseCase", () => {
       // Assert
       expect(mockPasswordHasher.compare).toHaveBeenCalledWith(
         "Password123!",
-        "hashedPassword123",
+        "hashedPassword123"
       );
     });
 
     it("should sign the JWT with the correct payload and options", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockResolvedValue("mock.jwt.token");
@@ -137,7 +137,7 @@ describe("LoginUserUseCase", () => {
       expect(mockJWTService.sign).toHaveBeenCalledWith(
         { sub: "user-123", email: "test@example.com", scope: "access" },
         "access",
-        { expiresIn: "5m" },
+        { expiresIn: "5m" }
       );
     });
   });
@@ -153,9 +153,9 @@ describe("LoginUserUseCase", () => {
         Result.fail(
           AuthenticationError.userNotFound(
             "User not found",
-            "User with email does not exist",
-          ),
-        ),
+            "User with email does not exist"
+          )
+        )
       );
 
       // Act
@@ -172,9 +172,9 @@ describe("LoginUserUseCase", () => {
         Result.fail(
           AuthenticationError.userNotFound(
             "User not found",
-            "User with email does not exist",
-          ),
-        ),
+            "User with email does not exist"
+          )
+        )
       );
 
       // Act
@@ -190,9 +190,9 @@ describe("LoginUserUseCase", () => {
         Result.fail(
           AuthenticationError.userNotFound(
             "User not found",
-            "User with email does not exist",
-          ),
-        ),
+            "User with email does not exist"
+          )
+        )
       );
 
       // Act
@@ -219,7 +219,7 @@ describe("LoginUserUseCase", () => {
     it("should return a failure result when the user is blocked", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(blockedUserEntity)),
+        Result.success(new User(blockedUserEntity))
       );
 
       // Act
@@ -233,7 +233,7 @@ describe("LoginUserUseCase", () => {
     it("should not attempt password comparison when the user is blocked", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(blockedUserEntity)),
+        Result.success(new User(blockedUserEntity))
       );
 
       // Act
@@ -246,7 +246,7 @@ describe("LoginUserUseCase", () => {
     it("should not issue a token when the user is blocked", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(blockedUserEntity)),
+        Result.success(new User(blockedUserEntity))
       );
 
       // Act
@@ -259,7 +259,7 @@ describe("LoginUserUseCase", () => {
     it("should not call increaseFailedLoginAttempts when the user is blocked", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(blockedUserEntity)),
+        Result.success(new User(blockedUserEntity))
       );
 
       // Act
@@ -267,7 +267,7 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(
-        mockAuthRepository.increaseFailedLoginAttempts,
+        mockAuthRepository.increaseFailedLoginAttempts
       ).not.toHaveBeenCalled();
     });
   });
@@ -287,7 +287,7 @@ describe("LoginUserUseCase", () => {
     it("should return a failure result when the user is not verified", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(unverifiedUserEntity)),
+        Result.success(new User(unverifiedUserEntity))
       );
 
       // Act
@@ -301,7 +301,7 @@ describe("LoginUserUseCase", () => {
     it("should not attempt password comparison when the user is not verified", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(unverifiedUserEntity)),
+        Result.success(new User(unverifiedUserEntity))
       );
 
       // Act
@@ -314,7 +314,7 @@ describe("LoginUserUseCase", () => {
     it("should not issue a token when the user is not verified", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(unverifiedUserEntity)),
+        Result.success(new User(unverifiedUserEntity))
       );
 
       // Act
@@ -327,7 +327,7 @@ describe("LoginUserUseCase", () => {
     it("should not call increaseFailedLoginAttempts when the user is not verified", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(unverifiedUserEntity)),
+        Result.success(new User(unverifiedUserEntity))
       );
 
       // Act
@@ -335,7 +335,7 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(
-        mockAuthRepository.increaseFailedLoginAttempts,
+        mockAuthRepository.increaseFailedLoginAttempts
       ).not.toHaveBeenCalled();
     });
   });
@@ -348,11 +348,11 @@ describe("LoginUserUseCase", () => {
     it("should return a failure result when the password is wrong", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(false);
       mockAuthRepository.increaseFailedLoginAttempts.mockResolvedValue(
-        Result.success(undefined),
+        Result.success(undefined)
       );
 
       // Act
@@ -366,11 +366,11 @@ describe("LoginUserUseCase", () => {
     it("should call compare with the plain password and stored hash", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(false);
       mockAuthRepository.increaseFailedLoginAttempts.mockResolvedValue(
-        Result.success(undefined),
+        Result.success(undefined)
       );
 
       // Act
@@ -379,18 +379,18 @@ describe("LoginUserUseCase", () => {
       // Assert
       expect(mockPasswordHasher.compare).toHaveBeenCalledWith(
         "Password123!",
-        "hashedPassword123",
+        "hashedPassword123"
       );
     });
 
     it("should call increaseFailedLoginAttempts with the user id on wrong password", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(false);
       mockAuthRepository.increaseFailedLoginAttempts.mockResolvedValue(
-        Result.success(undefined),
+        Result.success(undefined)
       );
 
       // Act
@@ -398,21 +398,21 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(
-        mockAuthRepository.increaseFailedLoginAttempts,
+        mockAuthRepository.increaseFailedLoginAttempts
       ).toHaveBeenCalledWith("user-123");
       expect(
-        mockAuthRepository.increaseFailedLoginAttempts,
+        mockAuthRepository.increaseFailedLoginAttempts
       ).toHaveBeenCalledTimes(1);
     });
 
     it("should not issue a token when the password is wrong", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(false);
       mockAuthRepository.increaseFailedLoginAttempts.mockResolvedValue(
-        Result.success(undefined),
+        Result.success(undefined)
       );
 
       // Act
@@ -431,7 +431,7 @@ describe("LoginUserUseCase", () => {
     it("should return a failure result when sign rejects", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockRejectedValue(new Error("JWT generation failed"));
@@ -447,7 +447,7 @@ describe("LoginUserUseCase", () => {
     it("should return the 'Token generation failed' message when sign rejects", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockRejectedValue(new Error("JWT generation failed"));
@@ -462,7 +462,7 @@ describe("LoginUserUseCase", () => {
     it("should attempt to sign the token with the correct payload before failing", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockRejectedValue(new Error("JWT generation failed"));
@@ -474,14 +474,14 @@ describe("LoginUserUseCase", () => {
       expect(mockJWTService.sign).toHaveBeenCalledWith(
         { sub: "user-123", email: "test@example.com", scope: "access" },
         "access",
-        { expiresIn: "5m" },
+        { expiresIn: "5m" }
       );
     });
 
     it("should not call increaseFailedLoginAttempts when sign rejects", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockResolvedValue(true);
       mockJWTService.sign.mockRejectedValue(new Error("JWT generation failed"));
@@ -491,7 +491,7 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(
-        mockAuthRepository.increaseFailedLoginAttempts,
+        mockAuthRepository.increaseFailedLoginAttempts
       ).not.toHaveBeenCalled();
     });
   });
@@ -509,10 +509,10 @@ describe("LoginUserUseCase", () => {
     it("should return a failure result when compare throws", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockRejectedValue(
-        new Error("Hash comparison failed"),
+        new Error("Hash comparison failed")
       );
       // Act
       const result = await loginUserUseCase.run(validLoginPayload);
@@ -525,10 +525,10 @@ describe("LoginUserUseCase", () => {
     it("should not call increaseFailedLoginAttempts when compare throws", async () => {
       // Arrange — a hasher crash is a system fault, not a bad password entry.
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockRejectedValue(
-        new Error("Hash comparison failed"),
+        new Error("Hash comparison failed")
       );
 
       // Act
@@ -536,17 +536,17 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(
-        mockAuthRepository.increaseFailedLoginAttempts,
+        mockAuthRepository.increaseFailedLoginAttempts
       ).not.toHaveBeenCalled();
     });
 
     it("should not issue a token when compare throws", async () => {
       // Arrange
       mockAuthRepository.findByEmail.mockResolvedValue(
-        Result.success(new User(baseUserEntity)),
+        Result.success(new User(baseUserEntity))
       );
       mockPasswordHasher.compare.mockRejectedValue(
-        new Error("Hash comparison failed"),
+        new Error("Hash comparison failed")
       );
       // Act
       await loginUserUseCase.run(validLoginPayload);
