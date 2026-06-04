@@ -31,7 +31,7 @@ describe("RedisService integration", () => {
   afterAll(async () => {
     await redisService?.disconnect();
     await container?.stop();
-  });
+  }, 60_000);
 
   it("stores and retrieves a string value", async () => {
     await redisService.set("redis-service:string", "active");
