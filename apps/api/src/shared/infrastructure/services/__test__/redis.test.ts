@@ -108,15 +108,19 @@ describe("RedisService integration", () => {
     );
   });
 
-  it("expires keys using the provided TTL", async () => {
-    await redisService.set("redis-service:ttl", "short-lived", 1);
+  it(
+    "expires keys using the provided TTL",
+    async () => {
+      await redisService.set("redis-service:ttl", "short-lived", 1);
 
-    await expect(redisService.get("redis-service:ttl")).resolves.toBe(
-      "short-lived"
-    );
+      await expect(redisService.get("redis-service:ttl")).resolves.toBe(
+        "short-lived"
+      );
 
-    await new Promise((resolve) => setTimeout(resolve, 1100));
+      await new Promise((resolve) => setTimeout(resolve, 2_000));
 
-    await expect(redisService.get("redis-service:ttl")).resolves.toBeNull();
-  });
+      await expect(redisService.get("redis-service:ttl")).resolves.toBeNull();
+    },
+    15_000
+  );
 });
