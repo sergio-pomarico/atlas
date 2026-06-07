@@ -1,10 +1,11 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import type {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
+import {
+  PrismaClientInitializationError,
+  type PrismaClientKnownRequestError,
+  type PrismaClientUnknownRequestError,
 } from "@prisma/client/runtime/client";
 import { injectable } from "inversify";
-import { Prisma, PrismaClient } from "../../../../generated/prisma/client.ts";
+import { PrismaClient } from "../../../../generated/prisma/client.ts";
 
 export type PrismaError =
   | PrismaClientKnownRequestError
@@ -42,9 +43,9 @@ export class PrismaService {
 
   getClient(): PrismaClient {
     if (!this.client) {
-      throw new Prisma.PrismaClientInitializationError(
+      throw new PrismaClientInitializationError(
         "PrismaService has not been initialized. Call ready() before getClient().",
-        Prisma.prismaVersion.client
+        "7.4.0"
       );
     }
 
