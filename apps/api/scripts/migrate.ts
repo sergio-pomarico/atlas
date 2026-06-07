@@ -187,10 +187,8 @@ async function main(): Promise<void> {
   // 1. Validate args before connecting to Infisical
   validateArgs(prismaArgs, environment);
 
-  // 2. Load secrets into process.env via Infisical SDK unless DATABASE_URL is provided
-  if (!process.env.DATABASE_URL) {
-    await loadSecretsIntoEnv(environment);
-  }
+  // 2. Load secrets into process.env via Infisical SDK
+  await loadSecretsIntoEnv(environment);
 
   // 3. Run Prisma with enriched process.env
   await runPrismaCommand(prismaArgs);
