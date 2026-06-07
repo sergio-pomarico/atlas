@@ -35,7 +35,7 @@ const mockJWTService = {
 const baseUserEntity: UserEntity = {
   id: "user-123",
   email: "test@example.com",
-  phone: 1_234_567_890,
+  phone: "1234567890",
   password: "hashedPassword123",
   verified: true,
   status: UserStatus.ACTIVE,

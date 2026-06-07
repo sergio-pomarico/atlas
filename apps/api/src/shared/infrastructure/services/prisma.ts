@@ -3,7 +3,6 @@ import type {
   PrismaClientKnownRequestError,
   PrismaClientUnknownRequestError,
 } from "@prisma/client/runtime/client";
-import { SecretMangerService } from "@shared/infrastructure/services/secret-manager.ts";
 import { injectable } from "inversify";
 import { PrismaClient } from "../../../../generated/prisma/client.ts";
 
@@ -11,33 +10,41 @@ export type PrismaError =
   | PrismaClientKnownRequestError
   | PrismaClientUnknownRequestError;
 
+export type DatabaseUrlProvider = () => Promise<string>;
+
 @injectable()
 export class PrismaService {
   private static instance: PrismaService;
   private client: PrismaClient | null = null;
+  private readonly initialization: Promise<void>;
+  private readonly getDatabaseUrl: DatabaseUrlProvider;
 
-  private constructor() {
-    this.initialize().catch((err) => {
+  constructor(getDatabaseUrl: DatabaseUrlProvider) {
+    this.getDatabaseUrl = getDatabaseUrl;
+    this.initialization = this.initialize().catch((err) => {
       console.error("Error initializing PrismaService:", err);
       throw err;
     });
   }
 
-  static getInstance(): PrismaService {
+  static getInstance(getDatabaseUrl: DatabaseUrlProvider): PrismaService {
     if (!PrismaService.instance) {
-      PrismaService.instance = new PrismaService();
+      PrismaService.instance = new PrismaService(getDatabaseUrl);
     }
     return PrismaService.instance;
   }
 
   async initialize(): Promise<void> {
-    const databaseUrl =
-      await SecretMangerService.getInstance().getSecret("DATABASE_URL");
-    const adapter = new PrismaPg({ connectionString: databaseUrl.secretValue });
+    const databaseUrl = await this.getDatabaseUrl();
+    const adapter = new PrismaPg({ connectionString: databaseUrl });
     this.client = new PrismaClient({ adapter });
   }
 
   getClient(): PrismaClient {
     return this.client as PrismaClient;
+  }
+
+  async ready(): Promise<void> {
+    await this.initialization;
   }
 }

@@ -6,7 +6,7 @@ export class User
 {
   readonly id: string;
   readonly email: string;
-  readonly phone: number;
+  readonly phone: string;
   readonly password: string;
   private readonly _verified: boolean;
   readonly sessionId?: string;
