@@ -1,5 +1,9 @@
-/** @type {import("jest").Config} */
-const config = {
+/** @jest-config-loader ts-node */
+/** @jest-config-loader-options {"transpileOnly": true} */
+
+import type { Config } from "jest";
+
+const config: Config = {
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: "coverage",
