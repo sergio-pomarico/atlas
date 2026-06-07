@@ -7,7 +7,7 @@ describe("User Domain Entity", () => {
   const mockUserData: UserEntity = {
     id: "user-123",
     email: "test@example.com",
-    phone: 3_014_345_345,
+    phone: "3014345345",
     password: "hashedPassword123",
     verified: true,
     status: UserStatus.ACTIVE,

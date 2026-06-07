@@ -1,7 +1,7 @@
 export interface UserEntity {
   readonly id: string;
   email: string;
-  phone: number;
+  phone: string;
   verified?: boolean;
   readonly sessionId?: string;
   status: UserStatusType;

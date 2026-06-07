@@ -1,7 +1,7 @@
 model User {
   id                  String     @id @default(uuid())
   email               String     @unique
-  phone               String?    @unique
+  phone               String     @unique
   verified            Boolean    @default(false) @map("is_verified")
   status              UserStatus @default(INACTIVE) @map("status")
   password            String
