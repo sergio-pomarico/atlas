@@ -39,6 +39,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma client
+        env:
+          DATABASE_URL: postgresql://atlas:atlas@localhost:5432/atlas_test
+        run: pnpm --filter @atlas/api db:generate
+
       - name: Check backend types
         run: pnpm --filter @atlas/api type-check
 
