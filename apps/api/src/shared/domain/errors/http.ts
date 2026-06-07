@@ -1,4 +1,5 @@
-import AppError, { type AppErrorStatus } from "./app.ts";
+import type { ErrorResponseStatus } from "../response.ts";
+import AppError from "./app.ts";
 import { ErrorCode } from "./code.ts";
 
 const BAD_REQUEST = 400;
@@ -12,7 +13,7 @@ export default class HttpError extends AppError {
     message: string,
     description: string,
     code: ErrorCode,
-    status: AppErrorStatus,
+    status: ErrorResponseStatus,
     statusCode: number
   ) {
     super(message, description, code, status, statusCode);
