@@ -1,5 +1,5 @@
 /** @jest-config-loader ts-node */
-/** @jest-config-loader-options {"transpileOnly": true} */
+/** @jest-config-loader-options {"transpileOnly":true,"moduleTypes":{"jest.config.ts":"cjs"},"compilerOptions":{"module":"CommonJS","moduleResolution":"node","verbatimModuleSyntax":false}} */
 
 /**
  * For a detailed explanation regarding each configuration property, visit:
