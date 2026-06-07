@@ -2,7 +2,7 @@
 description: Create a pull request for the current branch
 ---
 
-Create a well-structured pull request for the current branch using `gh` and a clear PR template.
+Create a well-structured pull request for the current branch using `gh`, the repo PR template, and the `make-pull-request` skill.
 
 Optional context for PR: `$ARGUMENTS`
 
@@ -27,6 +27,7 @@ Rules:
   - Title: concise, imperative, follow repo style; use `$ARGUMENTS` only if it fits.
   - Note any breaking changes or migrations.
   - List relevant testing expectations.
+- Use the `make-pull-request` skill to generate the PR body. It should use OpenSpec artifacts when present and fall back to commit/diff context when they are absent.
 - Use the repo PR template from `.github/pull_request_template.md`; keep it accurate and specific.
 - Before creating the PR, show the full title/body/base and request confirmation.
 - Do not open a browser unless asked.
@@ -37,8 +38,8 @@ Flow:
 1. Gather git status, branch tracking, recent commits, and diff vs base.
 2. Detect whether the branch tracks a remote and if it has unpushed commits.
 3. If unpushed commits exist, run `/make-commit` to group and push.
-4. Draft PR title, type, and description using `.github/pull_request_template.md`.
+4. Load `make-pull-request` and draft the body with `.opencode/skills/make-pull-request/scripts/generate_pr_body.py --repo . --output <body-file>`, adding `--change-id <change>` only when a specific OpenSpec change is known.
 5. Present the draft and ask for edits or confirmation.
 6. Create the PR with:
-   `gh pr create --title "..." --body "..." --base <base>`
+   `gh pr create --title "..." --body-file <body-file> --base <base>`
 7. Return the PR URL and a short next-steps note (CI, review).
