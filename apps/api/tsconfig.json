@@ -18,6 +18,7 @@
     "./src/**/*",
     "./types/**/*",
     "./generated/**/*",
+    "./jest.config.ts",
     "./prisma.config.ts",
     "./scripts/migrate.ts",
     "setup-tests.ts"
