@@ -41,7 +41,13 @@ export class PrismaService {
   }
 
   getClient(): PrismaClient {
-    return this.client as PrismaClient;
+    if (!this.client) {
+      throw new Error(
+        "PrismaService has not been initialized. Call ready() before getClient()."
+      );
+    }
+
+    return this.client;
   }
 
   async ready(): Promise<void> {
