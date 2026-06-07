@@ -1,6 +1,3 @@
-/** @jest-config-loader ts-node */
-/** @jest-config-loader-options {"transpileOnly":true,"moduleTypes":{"jest.config.ts":"cjs"},"compilerOptions":{"module":"CommonJS","moduleResolution":"node","verbatimModuleSyntax":false}} */
-
 /**
  * For a detailed explanation regarding each configuration property, visit:
  * https://jestjs.io/docs/configuration
@@ -209,4 +206,4 @@ const config: Config = {
   // watchman: true,
 };
 
-module.exports = config;
+export default config;
