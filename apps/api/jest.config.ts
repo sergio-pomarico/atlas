@@ -1,11 +1,10 @@
+/** @jest-config-loader ts-node */
+/** @jest-config-loader-options {"transpileOnly": true} */
 
 /**
  * For a detailed explanation regarding each configuration property, visit:
  * https://jestjs.io/docs/configuration
  */
-
-/** @jest-config-loader ts-node */
-/** @jest-config-loader-options {"transpileOnly": true} */
 
 import type { Config } from "jest";
 
@@ -211,4 +210,3 @@ const config: Config = {
 };
 
 export default config;
-
