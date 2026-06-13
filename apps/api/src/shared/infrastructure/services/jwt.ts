@@ -3,9 +3,9 @@ import jwt from "jsonwebtoken";
 
 export type Scope = "access" | "mfa" | "refresh";
 type SigningKeyScope = Exclude<Scope, "mfa">;
-const JWT_ALGORITHM = "RS256";
-const JWT_AUDIENCE = "atlas-client";
-const JWT_ISSUER = "atlas-api";
+export const JWT_ALGORITHM = "RS256";
+export const JWT_AUDIENCE = "atlas-client";
+export const JWT_ISSUER = "atlas-api";
 
 export type JWTError = jwt.JsonWebTokenError | jwt.TokenExpiredError;
 

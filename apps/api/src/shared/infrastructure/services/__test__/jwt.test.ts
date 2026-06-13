@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { JWTService, type Token } from "@shared/infrastructure/services/jwt.ts";
+import {
+  JWT_ALGORITHM,
+  JWT_AUDIENCE,
+  JWT_ISSUER,
+  JWTService,
+  type Token,
+} from "@shared/infrastructure/services/jwt.ts";
 import { SecretMangerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
 
@@ -47,9 +53,9 @@ describe("JWTService", () => {
     expect(signSpy.mock.calls[0]?.[1]).toBe("private-key");
     expect(signSpy.mock.calls[0]?.[2]).toEqual({
       expiresIn: "5m",
-      algorithm: "RS256",
-      audience: "atlas-client",
-      issuer: "atlas-api",
+      algorithm: JWT_ALGORITHM,
+      audience: JWT_AUDIENCE,
+      issuer: JWT_ISSUER,
     });
     expect(signSpy.mock.calls[0]?.[3]).toEqual(expect.any(Function));
   });
@@ -74,9 +80,9 @@ describe("JWTService", () => {
     );
 
     expect(signSpy.mock.calls[0]?.[2]).toEqual({
-      algorithm: "RS256",
-      audience: "atlas-client",
-      issuer: "atlas-api",
+      algorithm: JWT_ALGORITHM,
+      audience: JWT_AUDIENCE,
+      issuer: JWT_ISSUER,
     });
   });
 
@@ -157,9 +163,9 @@ describe("JWTService", () => {
       "jwt-token",
       "public-key",
       {
-        algorithms: ["RS256"],
-        audience: "atlas-client",
-        issuer: "atlas-api",
+        algorithms: [JWT_ALGORITHM],
+        audience: JWT_AUDIENCE,
+        issuer: JWT_ISSUER,
       },
       expect.any(Function)
     );
