@@ -2,6 +2,10 @@ import { SecretMangerService } from "@shared/infrastructure/services/secret-mana
 import jwt from "jsonwebtoken";
 
 export type Scope = "access" | "mfa" | "refresh";
+type SigningKeyScope = Exclude<Scope, "mfa">;
+const JWT_ALGORITHM = "RS256";
+const JWT_AUDIENCE = "atlas-client";
+const JWT_ISSUER = "atlas-api";
 
 export type JWTError = jwt.JsonWebTokenError | jwt.TokenExpiredError;
 
@@ -30,8 +34,8 @@ export class JWTService {
   }
 
   async sign(
-    payload: Omit<Token, "iat" | "exp">,
-    keyName: Omit<Scope, "mfa">,
+    payload: Omit<Token, "iat" | "exp" | "iss" | "aud">,
+    keyName: SigningKeyScope,
     options?: jwt.SignOptions | undefined
   ): Promise<string | null> {
     const signingKey = await this.secretManager.getSecret(
@@ -39,9 +43,14 @@ export class JWTService {
     );
     return new Promise((resolve) => {
       jwt.sign(
-        { issuer: "atlas-api", audience: "atlas-client", ...payload },
+        payload,
         signingKey.secretValue,
-        { ...options, algorithm: "RS256" },
+        {
+          ...options,
+          algorithm: JWT_ALGORITHM,
+          audience: JWT_AUDIENCE,
+          issuer: JWT_ISSUER,
+        },
         (err, token) => {
           if (err) {
             return resolve(null);
@@ -54,7 +63,7 @@ export class JWTService {
 
   async verify<Token>(
     token: string,
-    keyName: Omit<Scope, "mfa">
+    keyName: SigningKeyScope
   ): Promise<Token | null> {
     const signingKey = await this.secretManager.getSecret(
       `${keyName}_key_public`
@@ -63,7 +72,11 @@ export class JWTService {
       jwt.verify(
         token,
         signingKey.secretValue,
-        { algorithms: ["RS256"] },
+        {
+          algorithms: [JWT_ALGORITHM],
+          audience: JWT_AUDIENCE,
+          issuer: JWT_ISSUER,
+        },
         (err, decoded) => {
           if (err) {
             return resolve(null);
