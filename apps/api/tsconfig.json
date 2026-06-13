@@ -9,9 +9,9 @@
     "noEmit": true,
     "paths": {
       "@shared/*": ["./src/shared/*"],
-      "@modules/*": ["./src/modules/*"]
+      "@modules/*": ["./src/modules/*"],
     },
-    "strictNullChecks": true
+    "strictNullChecks": true,
   },
   "exclude": ["node_modules"],
   "include": [
@@ -21,6 +21,6 @@
     "./jest.config.ts",
     "./prisma.config.ts",
     "./scripts/migrate.ts",
-    "setup-tests.ts"
-  ]
+    "setup-tests.ts",
+  ],
 }

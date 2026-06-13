@@ -7,7 +7,7 @@ export type ErrorResponseStatus = Exclude<AppResponseStatus, "success">;
 
 export interface ApiSuccessResponse<T = unknown> {
   status: SuccessResponseStatus;
-  mensage: string;
+  message: string;
   data?: T;
 }
 

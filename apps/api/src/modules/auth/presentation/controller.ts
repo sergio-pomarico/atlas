@@ -28,7 +28,7 @@ export class AuthController {
     const credentials = result.getData();
     res.status(200).json({
       status: "success",
-      mensage: "User logged in successfully",
+      message: "User logged in successfully",
       data: credentials,
     });
   };
