@@ -6,7 +6,6 @@ import { ArgonPasswordHasher } from "@modules/auth/infrastructure/password-hashe
 import { AuthRepositoryImpl } from "@modules/auth/infrastructure/reporitory-impl.ts";
 import { AuthController } from "@modules/auth/presentation/controller.ts";
 import sharedContainer from "@shared/infrastructure/container.ts";
-import { EmailService } from "@shared/infrastructure/services/email.ts";
 import { JWTService } from "@shared/infrastructure/services/jwt.ts";
 import { Container } from "inversify";
 
@@ -16,10 +15,6 @@ authContainer.bind<AuthController>("AuthController").to(AuthController);
 authContainer.bind<LoginUserUseCase>("LoginUserUseCase").to(LoginUserUseCase);
 authContainer.bind<AuthRepository>("AuthRepository").to(AuthRepositoryImpl);
 authContainer.bind<PasswordHasher>("PasswordHasher").to(ArgonPasswordHasher);
-authContainer
-  .bind<EmailService>("EmailService")
-  .to(EmailService)
-  .inSingletonScope();
 authContainer
   .bind<JWTService>("JWTService")
   .toConstantValue(JWTService.getInstance());
