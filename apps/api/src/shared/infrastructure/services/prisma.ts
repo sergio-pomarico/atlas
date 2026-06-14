@@ -19,7 +19,7 @@ export class PrismaService {
 
   constructor(
     @inject("SecretManagerService")
-    secretManager: SecretManagerService
+    secretManager: SecretManagerService,
   ) {
     this.secretManager = secretManager;
   }
@@ -31,11 +31,10 @@ export class PrismaService {
   }
 
   getClient(): PrismaClient {
-    console.log("Getting Prisma client.", this.client);
     if (!this.client) {
       throw new PrismaClientInitializationError(
         "PrismaService has not been initialized.",
-        Prisma.prismaVersion.client
+        Prisma.prismaVersion.client,
       );
     }
     return this.client;
