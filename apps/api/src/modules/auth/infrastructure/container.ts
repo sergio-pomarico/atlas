@@ -9,17 +9,17 @@ import { JWTService } from "@shared/infrastructure/services/jwt.ts";
 import type { Logger } from "@shared/infrastructure/services/logger.ts";
 import { Logger as LoggerImpl } from "@shared/infrastructure/services/logger.ts";
 import { PrismaService } from "@shared/infrastructure/services/prisma.ts";
-import { SecretMangerService } from "@shared/infrastructure/services/secret-manager.ts";
+import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import { Container } from "inversify";
 
 const container = new Container();
-const secretManager = SecretMangerService.getInstance();
+const secretManager = SecretManagerService.getInstance();
 
 container.bind<PrismaService>("PrismaService").toConstantValue(
   PrismaService.getInstance(async () => {
     const databaseUrl = await secretManager.getSecret("DATABASE_URL");
     return databaseUrl.secretValue;
-  })
+  }),
 );
 container.bind<Logger>("Logger").toConstantValue(LoggerImpl.getInstance());
 container.bind<AuthController>("AuthController").to(AuthController);

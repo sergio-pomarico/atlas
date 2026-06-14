@@ -1,4 +1,4 @@
-import { SecretMangerService } from "@shared/infrastructure/services/secret-manager.ts";
+import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import { Resend } from "resend";
 
 export interface SendMailOptions {
@@ -21,8 +21,8 @@ export class EmailService {
     });
   }
 
-  private readonly secretManager: SecretMangerService =
-    SecretMangerService.getInstance();
+  private readonly secretManager: SecretManagerService =
+    SecretManagerService.getInstance();
   transporter: Resend | null = null;
 
   async initialize(): Promise<void> {

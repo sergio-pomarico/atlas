@@ -1,8 +1,8 @@
 import { InfisicalSDK, type Secret } from "@infisical/sdk";
 import { envConfig } from "@shared/utils/config.ts";
 
-export class SecretMangerService {
-  private static instance: SecretMangerService;
+export class SecretManagerService {
+  private static instance: SecretManagerService;
   private readonly client: InfisicalSDK;
 
   private constructor() {
@@ -10,11 +10,11 @@ export class SecretMangerService {
     this.client.auth().accessToken(envConfig().secretToken);
   }
 
-  static getInstance(): SecretMangerService {
-    if (!SecretMangerService.instance) {
-      SecretMangerService.instance = new SecretMangerService();
+  static getInstance(): SecretManagerService {
+    if (!SecretManagerService.instance) {
+      SecretManagerService.instance = new SecretManagerService();
     }
-    return SecretMangerService.instance;
+    return SecretManagerService.instance;
   }
 
   async getSecret(key: string): Promise<Secret> {
