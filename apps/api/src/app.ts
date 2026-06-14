@@ -1,11 +1,13 @@
+import { initializeSharedServices } from "@shared/infrastructure/container.ts";
 import { Server } from "@shared/infrastructure/server.ts";
 import { envConfig } from "@shared/utils/config.ts";
 
-(() => {
-  main();
+(async () => {
+  await main();
 })();
 
-function main() {
+async function main() {
+  await initializeSharedServices();
   const server = new Server(envConfig().port);
   server.start();
 }
