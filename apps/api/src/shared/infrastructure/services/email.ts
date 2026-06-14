@@ -1,29 +1,45 @@
-import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
+import type { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
+import { inject, injectable } from "inversify";
 import { Resend } from "resend";
 
 export interface SendMailOptions {
   to: string | string[];
   subject: string;
   htmlBody: string;
-  attachements?: Attachement[];
+  attachments?: Attachment[];
 }
 
-export interface Attachement {
+export interface Attachment {
   filename: string;
   path: string;
 }
 
-export class EmailService {
-  constructor() {
-    this.initialize().catch((err) => {
-      console.error("Error initializing EmailService:", err);
-      throw err;
-    });
+export class EmailServiceError extends Error {
+  private constructor(message: string) {
+    super(message);
+    this.name = "EmailServiceError";
+    Error.captureStackTrace(this, EmailServiceError);
   }
 
-  private readonly secretManager: SecretManagerService =
-    SecretManagerService.getInstance();
-  transporter: Resend | null = null;
+  static notInitialized(): EmailServiceError {
+    return new EmailServiceError(
+      "EmailService has not been initialized. Call initialize() before send()."
+    );
+  }
+}
+
+@injectable()
+export class EmailService {
+  private readonly from = "codeo <hola@codeo.co>";
+  private transporter: Resend | null = null;
+  private readonly secretManager: SecretManagerService;
+
+  constructor(
+    @inject("SecretManagerService")
+    secretManager: SecretManagerService
+  ) {
+    this.secretManager = secretManager;
+  }
 
   async initialize(): Promise<void> {
     const resendApiKey = await this.secretManager.getSecret("RESEND_API_KEY");
@@ -31,20 +47,20 @@ export class EmailService {
   }
 
   send = async (options: SendMailOptions): Promise<boolean> => {
-    const { to, subject, htmlBody, attachements = [] } = options;
     if (!this.transporter) {
-      return false;
+      throw EmailServiceError.notInitialized();
     }
+
+    const { to, subject, htmlBody, attachments = [] } = options;
+
     const { data } = await this.transporter.emails.send({
-      from: "codeo <hola@codeo.co>",
+      from: this.from,
       to,
       subject,
       html: htmlBody,
-      attachments: attachements,
+      attachments,
     });
-    if (data) {
-      return true;
-    }
-    return false;
+
+    return Boolean(data);
   };
 }
