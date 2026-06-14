@@ -1,4 +1,4 @@
-import { SecretMangerService } from "@shared/infrastructure/services/secret-manager.ts";
+import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
 
 export type Scope = "access" | "mfa" | "refresh";
@@ -21,9 +21,9 @@ export interface Token {
 
 export class JWTService {
   private static instance: JWTService;
-  private readonly secretManager: SecretMangerService;
+  private readonly secretManager: SecretManagerService;
   private constructor() {
-    this.secretManager = SecretMangerService.getInstance();
+    this.secretManager = SecretManagerService.getInstance();
   }
 
   static getInstance(): JWTService {
@@ -36,10 +36,10 @@ export class JWTService {
   async sign(
     payload: Omit<Token, "iat" | "exp" | "iss" | "aud">,
     keyName: SigningKeyScope,
-    options?: jwt.SignOptions | undefined
+    options?: jwt.SignOptions | undefined,
   ): Promise<string | null> {
     const signingKey = await this.secretManager.getSecret(
-      `${keyName}_key_private`
+      `${keyName}_key_private`,
     );
     return new Promise((resolve) => {
       jwt.sign(
@@ -56,17 +56,17 @@ export class JWTService {
             return resolve(null);
           }
           return resolve(token || null);
-        }
+        },
       );
     });
   }
 
   async verify<Token>(
     token: string,
-    keyName: SigningKeyScope
+    keyName: SigningKeyScope,
   ): Promise<Token | null> {
     const signingKey = await this.secretManager.getSecret(
-      `${keyName}_key_public`
+      `${keyName}_key_public`,
     );
     return new Promise((resolve) => {
       jwt.verify(
@@ -82,7 +82,7 @@ export class JWTService {
             return resolve(null);
           }
           return resolve(decoded as Token);
-        }
+        },
       );
     });
   }
