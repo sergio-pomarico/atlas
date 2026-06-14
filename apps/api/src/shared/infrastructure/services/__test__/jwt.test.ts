@@ -1,23 +1,46 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import {
-  JWT_ALGORITHM,
-  JWT_AUDIENCE,
-  JWT_ISSUER,
-  JWTService,
-  type Token,
-} from "@shared/infrastructure/services/jwt.ts";
-import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
+import type { Token } from "@shared/infrastructure/services/jwt.ts";
 import jwt from "jsonwebtoken";
 
-const mockGetSecret = jest.fn<SecretManagerService["getSecret"]>();
+type JWTModule = typeof import("@shared/infrastructure/services/jwt.ts");
+
+const mockGetSecret = jest.fn<
+  (key: string) => Promise<{ secretValue: string }>
+>();
+
+jest.unstable_mockModule(
+  "@shared/infrastructure/services/secret-manager.ts",
+  () => ({
+    SecretManagerService: {
+      getInstance: jest.fn(() => ({
+        getSecret: mockGetSecret,
+      })),
+    },
+  }),
+);
+
+let JWTService: JWTModule["JWTService"];
+let JWT_ALGORITHM: JWTModule["JWT_ALGORITHM"];
+let JWT_AUDIENCE: JWTModule["JWT_AUDIENCE"];
+let JWT_ISSUER: JWTModule["JWT_ISSUER"];
 
 describe("JWTService", () => {
+  beforeAll(async () => {
+    ({ JWTService, JWT_ALGORITHM, JWT_AUDIENCE, JWT_ISSUER } = await import(
+      "@shared/infrastructure/services/jwt.ts"
+    ));
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (JWTService as unknown as { instance?: JWTService }).instance = undefined;
-    jest.spyOn(SecretManagerService, "getInstance").mockReturnValue({
-      getSecret: mockGetSecret,
-    } as unknown as SecretManagerService);
+    (JWTService as unknown as { instance?: unknown }).instance = undefined;
   });
 
   it("returns the same singleton instance", () => {
