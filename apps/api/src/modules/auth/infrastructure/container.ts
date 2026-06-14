@@ -5,29 +5,23 @@ import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import { ArgonPasswordHasher } from "@modules/auth/infrastructure/password-hasher-impl.ts";
 import { AuthRepositoryImpl } from "@modules/auth/infrastructure/reporitory-impl.ts";
 import { AuthController } from "@modules/auth/presentation/controller.ts";
+import sharedContainer from "@shared/infrastructure/container.ts";
+import { EmailService } from "@shared/infrastructure/services/email.ts";
 import { JWTService } from "@shared/infrastructure/services/jwt.ts";
-import type { Logger } from "@shared/infrastructure/services/logger.ts";
-import { Logger as LoggerImpl } from "@shared/infrastructure/services/logger.ts";
-import { PrismaService } from "@shared/infrastructure/services/prisma.ts";
-import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import { Container } from "inversify";
 
-const container = new Container();
-const secretManager = SecretManagerService.getInstance();
+const authContainer = new Container({ parent: sharedContainer });
 
-container.bind<PrismaService>("PrismaService").toConstantValue(
-  PrismaService.getInstance(async () => {
-    const databaseUrl = await secretManager.getSecret("DATABASE_URL");
-    return databaseUrl.secretValue;
-  }),
-);
-container.bind<Logger>("Logger").toConstantValue(LoggerImpl.getInstance());
-container.bind<AuthController>("AuthController").to(AuthController);
-container.bind<LoginUserUseCase>("LoginUserUseCase").to(LoginUserUseCase);
-container.bind<AuthRepository>("AuthRepository").to(AuthRepositoryImpl);
-container.bind<PasswordHasher>("PasswordHasher").to(ArgonPasswordHasher);
-container
+authContainer.bind<AuthController>("AuthController").to(AuthController);
+authContainer.bind<LoginUserUseCase>("LoginUserUseCase").to(LoginUserUseCase);
+authContainer.bind<AuthRepository>("AuthRepository").to(AuthRepositoryImpl);
+authContainer.bind<PasswordHasher>("PasswordHasher").to(ArgonPasswordHasher);
+authContainer
+  .bind<EmailService>("EmailService")
+  .to(EmailService)
+  .inSingletonScope();
+authContainer
   .bind<JWTService>("JWTService")
   .toConstantValue(JWTService.getInstance());
 
-export default container;
+export default authContainer;
