@@ -8,10 +8,12 @@ import {
   describe,
   expect,
   it,
+  jest,
 } from "@jest/globals";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import { AuthRepositoryImpl } from "@modules/auth/infrastructure/reporitory-impl.ts";
 import { PrismaService } from "@shared/infrastructure/services/prisma.ts";
+import type { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import {
   GenericContainer,
   type StartedTestContainer,
@@ -54,8 +56,15 @@ describe("AuthRepositoryImpl integration", () => {
 
     await runMigrations(databaseUrl);
 
-    prismaService = new PrismaService(async () => databaseUrl);
-    await prismaService.ready();
+    const mockGetSecret = jest.fn<SecretManagerService["getSecret"]>();
+    mockGetSecret.mockResolvedValue({ secretValue: databaseUrl } as never);
+    const secretManager = {
+      getSecret: mockGetSecret,
+    } as unknown as SecretManagerService;
+
+    prismaService = new PrismaService(secretManager);
+    await prismaService.init();
+    expect(mockGetSecret).toHaveBeenCalledWith("DATABASE_URL");
     repository = new AuthRepositoryImpl(prismaService);
   }, 60_000);
 
