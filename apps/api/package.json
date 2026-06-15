@@ -9,7 +9,7 @@
     "start": "NODE_ENV=prod node ./dist/app.js",
     "db:generate": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts generate",
     "db:migrate": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts migrate dev",
-    "db:migrate:deploy": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts migrate deploy",
+    "db:migrate:deploy": "NODE_ENV=prod tsx -r tsconfig-paths/register helpers/scripts/migrate.ts migrate deploy",
     "db:migrate:status": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts migrate status",
     "db:push": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts db push",
     "db:studio": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts studio",
