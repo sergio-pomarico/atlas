@@ -1,5 +1,3 @@
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { UserStatus } from "@atlas/entities/user.ts";
 import {
   afterAll,
@@ -8,79 +6,34 @@ import {
   describe,
   expect,
   it,
-  jest,
 } from "@jest/globals";
+import {
+  startPostgresTestDatabase,
+  type StartedPostgresTestDatabase,
+} from "@helpers/test/postgres.ts";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import { AuthRepositoryImpl } from "@modules/auth/infrastructure/reporitory-impl.ts";
-import { PrismaService } from "@shared/infrastructure/services/prisma.ts";
-import type { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
-import {
-  GenericContainer,
-  type StartedTestContainer,
-  Wait,
-} from "testcontainers";
-
-const execFileAsync = promisify(execFile);
-
-async function runMigrations(databaseUrl: string): Promise<void> {
-  await execFileAsync("pnpm", ["prisma", "migrate", "deploy"], {
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      DATABASE_URL: databaseUrl,
-    },
-  });
-}
 
 describe("AuthRepositoryImpl integration", () => {
-  let container: StartedTestContainer;
-  let prismaService: PrismaService;
+  let postgres: StartedPostgresTestDatabase;
   let repository: AuthRepositoryImpl;
 
   beforeAll(async () => {
-    container = await new GenericContainer("postgres:16-alpine")
-      .withEnvironment({
-        POSTGRES_DB: "atlas_test",
-        POSTGRES_PASSWORD: "atlas",
-        POSTGRES_USER: "atlas",
-      })
-      .withExposedPorts(5432)
-      .withWaitStrategy(
-        Wait.forLogMessage("database system is ready to accept connections")
-      )
-      .start();
-
-    const databaseUrl = `postgresql://atlas:atlas@${container.getHost()}:${container.getMappedPort(
-      5432
-    )}/atlas_test`;
-
-    await runMigrations(databaseUrl);
-
-    const mockGetSecret = jest.fn<SecretManagerService["getSecret"]>();
-    mockGetSecret.mockResolvedValue({ secretValue: databaseUrl } as never);
-    const secretManager = {
-      getSecret: mockGetSecret,
-    } as unknown as SecretManagerService;
-
-    prismaService = new PrismaService(secretManager);
-    await prismaService.init();
-    expect(mockGetSecret).toHaveBeenCalledWith("DATABASE_URL");
-    repository = new AuthRepositoryImpl(prismaService);
+    postgres = await startPostgresTestDatabase();
+    repository = new AuthRepositoryImpl(postgres.prismaService);
   }, 60_000);
 
   beforeEach(async () => {
-    const prisma = prismaService.getClient();
-    await prisma.session.deleteMany();
-    await prisma.user.deleteMany();
+    await postgres.prisma.session.deleteMany();
+    await postgres.prisma.user.deleteMany();
   });
 
   afterAll(async () => {
-    await prismaService?.getClient().$disconnect();
-    await container?.stop();
+    await postgres?.stop();
   }, 60_000);
 
   it("finds a user by email", async () => {
-    await prismaService.getClient().user.create({
+    await postgres.prisma.user.create({
       data: {
         email: "active@example.com",
         failedLoginAttempts: 0,
@@ -106,7 +59,7 @@ describe("AuthRepositoryImpl integration", () => {
   });
 
   it("increases failed login attempts for an existing user", async () => {
-    const user = await prismaService.getClient().user.create({
+    const user = await postgres.prisma.user.create({
       data: {
         email: "attempts@example.com",
         failedLoginAttempts: 1,
@@ -118,7 +71,7 @@ describe("AuthRepositoryImpl integration", () => {
     });
 
     const result = await repository.increaseFailedLoginAttempts(user.id);
-    const updatedUser = await prismaService.getClient().user.findUniqueOrThrow({
+    const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
       where: { id: user.id },
     });
 
@@ -128,7 +81,7 @@ describe("AuthRepositoryImpl integration", () => {
   });
 
   it("blocks the user when failed login attempts reaches the limit", async () => {
-    const user = await prismaService.getClient().user.create({
+    const user = await postgres.prisma.user.create({
       data: {
         email: "blocked@example.com",
         failedLoginAttempts: 4,
@@ -140,7 +93,7 @@ describe("AuthRepositoryImpl integration", () => {
     });
 
     const result = await repository.increaseFailedLoginAttempts(user.id);
-    const updatedUser = await prismaService.getClient().user.findUniqueOrThrow({
+    const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
       where: { id: user.id },
     });
 
