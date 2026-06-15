@@ -12,13 +12,24 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import authContainer from "@modules/auth/infrastructure/container.ts";
 import { ArgonPasswordHasher } from "@modules/auth/infrastructure/password-hasher-impl.ts";
-import sharedContainer from "@shared/infrastructure/container.ts";
-import { Server } from "@shared/infrastructure/server.ts";
 import type { JWTService } from "@shared/infrastructure/services/jwt.ts";
 import type { Application } from "express";
 import request from "supertest";
+
+const mockGetSecret =
+  jest.fn<(key: string) => Promise<{ secretValue: string }>>();
+
+jest.unstable_mockModule(
+  "@shared/infrastructure/services/secret-manager.ts",
+  () => ({
+    SecretManagerService: {
+      getInstance: jest.fn(() => ({
+        getSecret: mockGetSecret,
+      })),
+    },
+  })
+);
 
 const mockJWTService = {
   sign: jest.fn<JWTService["sign"]>(),
@@ -31,6 +42,13 @@ describe("POST /api/auth/login e2e", () => {
   let passwordHasher: ArgonPasswordHasher;
 
   beforeAll(async () => {
+    const [{ default: sharedContainer }, { default: authContainer }, { Server }] =
+      await Promise.all([
+        import("@shared/infrastructure/container.ts"),
+        import("@modules/auth/infrastructure/container.ts"),
+        import("@shared/infrastructure/server.ts"),
+      ]);
+
     postgres = await startPostgresTestDatabase();
     sharedContainer
       .rebindSync("PrismaService")
