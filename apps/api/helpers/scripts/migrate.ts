@@ -15,6 +15,11 @@ interface AllowedCommand {
 
 const ALLOWED_COMMANDS: AllowedCommand[] = [
   {
+    command: "generate",
+    subcommands: [],
+    allowedInProd: true,
+  },
+  {
     command: "migrate",
     subcommands: ["dev", "status"],
     allowedInProd: false,
@@ -41,7 +46,7 @@ const ALLOWED_COMMANDS: AllowedCommand[] = [
 function validateArgs(args: string[], environment: string): void {
   if (args.length === 0) {
     throw new Error(
-      "You must specify a Prisma command. Example: migrate dev, migrate deploy, db push"
+      "You must specify a Prisma command. Example: migrate dev, migrate deploy, db push",
     );
   }
 
@@ -52,27 +57,28 @@ function validateArgs(args: string[], environment: string): void {
     (entry) =>
       entry.command === command &&
       (entry.subcommands.length === 0 ||
-        (subcommand !== undefined && entry.subcommands.includes(subcommand)))
+        (subcommand !== undefined && entry.subcommands.includes(subcommand))),
   );
 
   if (!match) {
     throw new Error(
       `Command not allowed: "prisma ${args.join(" ")}"\n` +
         "Valid commands:\n" +
+        "  generate\n" +
         "  migrate dev\n" +
         "  migrate deploy\n" +
         "  migrate status\n" +
         "  db push\n" +
         "  db pull\n" +
         "  db seed\n" +
-        "  studio"
+        "  studio",
     );
   }
 
   if (isProduction && !match.allowedInProd) {
     throw new Error(
       `Command "prisma ${command} ${subcommand ?? ""}" is not allowed in "${environment}" environment.\n` +
-        `Only "migrate deploy" and "migrate status" are allowed in production.`
+        `Only "migrate deploy" and "migrate status" are allowed in production.`,
     );
   }
 
@@ -80,7 +86,7 @@ function validateArgs(args: string[], environment: string): void {
   if (command === "migrate" && subcommand === "reset") {
     throw new Error(
       '"migrate reset" is blocked in this script for safety.\n' +
-        "Run it manually only if you are sure: pnpm prisma migrate reset"
+        "Run it manually only if you are sure: pnpm prisma migrate reset",
     );
   }
 }
@@ -89,7 +95,7 @@ function validateArgs(args: string[], environment: string): void {
 
 async function loadSecretsIntoEnv(environment: string): Promise<void> {
   console.log(
-    `🔐 Loading secrets from Infisical [environment: ${environment}]...`
+    `🔐 Loading secrets from Infisical [environment: ${environment}]...`,
   );
 
   const token = process.env.SECRET_MANAGER_TOKEN;
@@ -97,13 +103,13 @@ async function loadSecretsIntoEnv(environment: string): Promise<void> {
 
   if (!token) {
     throw new Error(
-      "Missing SECRET_MANAGER_TOKEN in .env file. Cannot authenticate with Infisical."
+      "Missing SECRET_MANAGER_TOKEN in .env file. Cannot authenticate with Infisical.",
     );
   }
 
   if (!projectId) {
     throw new Error(
-      "Missing INFISICAL_PROJECT_ID in .env file. Cannot fetch secrets from Infisical."
+      "Missing INFISICAL_PROJECT_ID in .env file. Cannot fetch secrets from Infisical.",
     );
   }
 
@@ -116,11 +122,11 @@ async function loadSecretsIntoEnv(environment: string): Promise<void> {
       () =>
         reject(
           new Error(
-            `Timeout connecting to Infisical after ${timeoutMs}ms. Check your network or token.`
-          )
+            `Timeout connecting to Infisical after ${timeoutMs}ms. Check your network or token.`,
+          ),
         ),
-      timeoutMs
-    )
+      timeoutMs,
+    ),
   );
 
   const databaseUrlSecret = await Promise.race([
@@ -170,14 +176,14 @@ function runPrismaCommand(args: string[]): Promise<void> {
 
 async function main(): Promise<void> {
   // Load local .env to get Infisical credentials (SECRET_MANAGER_TOKEN, INFISICAL_PROJECT_ID)
-  const envPath = path.resolve(import.meta.dirname, "../.env");
+  const envPath = path.resolve(import.meta.dirname, "../../.env");
 
   try {
     process.loadEnvFile(envPath);
   } catch {
     throw new Error(
       `Could not load .env file at: ${envPath}\n` +
-        "Make sure the file exists with SECRET_MANAGER_TOKEN and INFISICAL_PROJECT_ID defined."
+        "Make sure the file exists with SECRET_MANAGER_TOKEN and INFISICAL_PROJECT_ID defined.",
     );
   }
 
