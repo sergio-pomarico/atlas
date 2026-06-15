@@ -42,12 +42,15 @@ describe("POST /api/auth/login e2e", () => {
   let passwordHasher: ArgonPasswordHasher;
 
   beforeAll(async () => {
-    const [{ default: sharedContainer }, { default: authContainer }, { Server }] =
-      await Promise.all([
-        import("@shared/infrastructure/container.ts"),
-        import("@modules/auth/infrastructure/container.ts"),
-        import("@shared/infrastructure/server.ts"),
-      ]);
+    const [
+      { default: sharedContainer },
+      { default: authContainer },
+      { Server },
+    ] = await Promise.all([
+      import("@shared/infrastructure/container.ts"),
+      import("@modules/auth/infrastructure/container.ts"),
+      import("@shared/infrastructure/server.ts"),
+    ]);
 
     postgres = await startPostgresTestDatabase();
     sharedContainer
