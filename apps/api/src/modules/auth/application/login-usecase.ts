@@ -65,6 +65,10 @@ export class LoginUserUseCase {
         )
       );
     }
+    const resetResult = await this.repository.resetFailedLoginAttempts(user.id);
+    if (!resetResult.isSuccess) {
+      return Result.fail(resetResult.getError());
+    }
     const token = await tryCatch<string | null, JWTError>(
       this.jwtService.sign(
         {

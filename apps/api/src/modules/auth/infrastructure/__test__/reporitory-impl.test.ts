@@ -1,5 +1,9 @@
 import { UserStatus } from "@atlas/entities/user.ts";
 import {
+  type StartedPostgresTestDatabase,
+  startPostgresTestDatabase,
+} from "@helpers/test/postgres.ts";
+import {
   afterAll,
   beforeAll,
   beforeEach,
@@ -7,10 +11,6 @@ import {
   expect,
   it,
 } from "@jest/globals";
-import {
-  startPostgresTestDatabase,
-  type StartedPostgresTestDatabase,
-} from "@helpers/test/postgres.ts";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import { AuthRepositoryImpl } from "@modules/auth/infrastructure/reporitory-impl.ts";
 
@@ -105,6 +105,35 @@ describe("AuthRepositoryImpl integration", () => {
   it("returns an authentication error when increasing attempts for a missing user", async () => {
     const result =
       await repository.increaseFailedLoginAttempts("missing-user-id");
+
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError()).toBeInstanceOf(AuthenticationError);
+  });
+
+  it("resets failed login attempts for an existing user", async () => {
+    const user = await postgres.prisma.user.create({
+      data: {
+        email: "reset@example.com",
+        failedLoginAttempts: 3,
+        password: "hashed-password",
+        phone: "3011111111",
+        status: UserStatus.ACTIVE,
+        verified: true,
+      },
+    });
+
+    const result = await repository.resetFailedLoginAttempts(user.id);
+    const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+
+    expect(result.isSuccess).toBe(true);
+    expect(updatedUser.failedLoginAttempts).toBe(0);
+    expect(updatedUser.status).toBe(UserStatus.ACTIVE);
+  });
+
+  it("returns an authentication error when resetting attempts for a missing user", async () => {
+    const result = await repository.resetFailedLoginAttempts("missing-user-id");
 
     expect(result.isSuccess).toBe(false);
     expect(result.getError()).toBeInstanceOf(AuthenticationError);

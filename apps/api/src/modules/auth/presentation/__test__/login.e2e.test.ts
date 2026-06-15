@@ -1,5 +1,9 @@
 import { UserStatus } from "@atlas/entities/user.ts";
 import {
+  type StartedPostgresTestDatabase,
+  startPostgresTestDatabase,
+} from "@helpers/test/postgres.ts";
+import {
   afterAll,
   beforeAll,
   beforeEach,
@@ -8,10 +12,6 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import {
-  startPostgresTestDatabase,
-  type StartedPostgresTestDatabase,
-} from "@helpers/test/postgres.ts";
 import authContainer from "@modules/auth/infrastructure/container.ts";
 import { ArgonPasswordHasher } from "@modules/auth/infrastructure/password-hasher-impl.ts";
 import sharedContainer from "@shared/infrastructure/container.ts";
@@ -57,11 +57,15 @@ describe("POST /api/auth/login e2e", () => {
     await createUser({
       email: "active@example.com",
       password: "Password123!",
+      failedLoginAttempts: 3,
     });
 
     const response = await request(app).post("/api/auth/login").send({
       email: "active@example.com",
       password: "Password123!",
+    });
+    const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
+      where: { email: "active@example.com" },
     });
 
     expect(response.status).toBe(200);
@@ -81,6 +85,7 @@ describe("POST /api/auth/login e2e", () => {
       "access",
       { expiresIn: "5m" }
     );
+    expect(updatedUser.failedLoginAttempts).toBe(0);
   });
 
   it("returns not found when the user does not exist", async () => {

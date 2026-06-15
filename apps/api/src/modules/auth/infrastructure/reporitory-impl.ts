@@ -38,12 +38,20 @@ export class AuthRepositoryImpl implements AuthRepository {
       );
     }
     user.incrementFailedLoginAttempts();
-    await tryCatch<UserEntity, PrismaError>(
+    const updateResult = await tryCatch<UserEntity, PrismaError>(
       this.prismaService.getClient().user.update({
         where: { id: userId },
         data: user.toObject(),
       }) as Promise<UserEntity>
     );
+    if (!updateResult.isSuccess) {
+      return Result.fail(
+        AuthenticationError.internalServerError(
+          "Failed login attempts update failed",
+          "An error occurred while updating failed login attempts"
+        )
+      );
+    }
     return Result.success(undefined);
   };
   findByEmail = async (
@@ -74,5 +82,43 @@ export class AuthRepositoryImpl implements AuthRepository {
       );
     }
     return Result.success(user);
+  };
+  resetFailedLoginAttempts = async (
+    userId: string
+  ): Promise<Result<void, AuthenticationError>> => {
+    const result = await tryCatch<UserEntity | null, AuthenticationError>(
+      this.prismaService.getClient().user.findUnique({
+        where: { id: userId },
+      }) as Promise<UserEntity | null>
+    );
+    if (!result.isSuccess) {
+      return Result.fail(result.getError());
+    }
+    const data = result.getData();
+    const user = data ? new User(data) : null;
+    if (!user) {
+      return Result.fail(
+        AuthenticationError.userNotFound(
+          "User not found",
+          "The user with the provided ID does not exist"
+        )
+      );
+    }
+    user.resetFailedLoginAttempts();
+    const updateResult = await tryCatch<UserEntity, PrismaError>(
+      this.prismaService.getClient().user.update({
+        where: { id: userId },
+        data: user.toObject(),
+      }) as Promise<UserEntity>
+    );
+    if (!updateResult.isSuccess) {
+      return Result.fail(
+        AuthenticationError.internalServerError(
+          "Failed login attempts reset failed",
+          "An error occurred while resetting failed login attempts"
+        )
+      );
+    }
+    return Result.success(undefined);
   };
 }

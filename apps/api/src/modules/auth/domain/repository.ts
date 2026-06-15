@@ -7,4 +7,7 @@ export interface AuthRepository {
   increaseFailedLoginAttempts: (
     userId: string
   ) => Promise<Result<void, AuthenticationError>>;
+  resetFailedLoginAttempts: (
+    userId: string
+  ) => Promise<Result<void, AuthenticationError>>;
 }

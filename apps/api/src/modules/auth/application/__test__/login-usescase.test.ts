@@ -16,6 +16,7 @@ import type { JWTService } from "@shared/infrastructure/services/jwt.ts";
 const mockAuthRepository: jest.Mocked<AuthRepository> = {
   findByEmail: jest.fn(),
   increaseFailedLoginAttempts: jest.fn(),
+  resetFailedLoginAttempts: jest.fn(),
 };
 
 const mockPasswordHasher: jest.Mocked<PasswordHasher> = {
@@ -58,6 +59,9 @@ describe("LoginUserUseCase", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockAuthRepository.resetFailedLoginAttempts.mockResolvedValue(
+      Result.success(undefined)
+    );
     loginUserUseCase = new LoginUserUseCase(
       mockAuthRepository,
       mockPasswordHasher,
@@ -140,6 +144,50 @@ describe("LoginUserUseCase", () => {
         { expiresIn: "5m" }
       );
     });
+
+    it("should reset failed login attempts with the user id", async () => {
+      // Arrange
+      mockAuthRepository.findByEmail.mockResolvedValue(
+        Result.success(new User(baseUserEntity))
+      );
+      mockPasswordHasher.compare.mockResolvedValue(true);
+      mockJWTService.sign.mockResolvedValue("mock.jwt.token");
+
+      // Act
+      await loginUserUseCase.run(validLoginPayload);
+
+      // Assert
+      expect(mockAuthRepository.resetFailedLoginAttempts).toHaveBeenCalledWith(
+        "user-123"
+      );
+      expect(mockAuthRepository.resetFailedLoginAttempts).toHaveBeenCalledTimes(
+        1
+      );
+    });
+
+    it("should not issue a token when resetting failed login attempts fails", async () => {
+      // Arrange
+      mockAuthRepository.findByEmail.mockResolvedValue(
+        Result.success(new User(baseUserEntity))
+      );
+      mockPasswordHasher.compare.mockResolvedValue(true);
+      mockAuthRepository.resetFailedLoginAttempts.mockResolvedValue(
+        Result.fail(
+          AuthenticationError.internalServerError(
+            "Reset failed",
+            "Could not reset failed login attempts"
+          )
+        )
+      );
+
+      // Act
+      const result = await loginUserUseCase.run(validLoginPayload);
+
+      // Assert
+      expect(result.isSuccess).toBe(false);
+      expect(result.getError()).toBeInstanceOf(AuthenticationError);
+      expect(mockJWTService.sign).not.toHaveBeenCalled();
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -200,6 +248,9 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(mockJWTService.sign).not.toHaveBeenCalled();
+      expect(
+        mockAuthRepository.resetFailedLoginAttempts
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -269,6 +320,9 @@ describe("LoginUserUseCase", () => {
       expect(
         mockAuthRepository.increaseFailedLoginAttempts
       ).not.toHaveBeenCalled();
+      expect(
+        mockAuthRepository.resetFailedLoginAttempts
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -336,6 +390,9 @@ describe("LoginUserUseCase", () => {
       // Assert
       expect(
         mockAuthRepository.increaseFailedLoginAttempts
+      ).not.toHaveBeenCalled();
+      expect(
+        mockAuthRepository.resetFailedLoginAttempts
       ).not.toHaveBeenCalled();
     });
   });
@@ -420,6 +477,9 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(mockJWTService.sign).not.toHaveBeenCalled();
+      expect(
+        mockAuthRepository.resetFailedLoginAttempts
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -493,6 +553,9 @@ describe("LoginUserUseCase", () => {
       expect(
         mockAuthRepository.increaseFailedLoginAttempts
       ).not.toHaveBeenCalled();
+      expect(mockAuthRepository.resetFailedLoginAttempts).toHaveBeenCalledWith(
+        "user-123"
+      );
     });
   });
 
@@ -553,6 +616,9 @@ describe("LoginUserUseCase", () => {
 
       // Assert
       expect(mockJWTService.sign).not.toHaveBeenCalled();
+      expect(
+        mockAuthRepository.resetFailedLoginAttempts
+      ).not.toHaveBeenCalled();
     });
   });
 });
