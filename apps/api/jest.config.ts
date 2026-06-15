@@ -93,6 +93,7 @@ const config: Config = {
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   moduleNameMapper: {
+    "^@helpers/(.*)$": "<rootDir>/helpers/$1",
     "^@modules/(.*)$": "<rootDir>/src/modules/$1",
     "^@shared/(.*)$": "<rootDir>/src/shared/$1",
   },
