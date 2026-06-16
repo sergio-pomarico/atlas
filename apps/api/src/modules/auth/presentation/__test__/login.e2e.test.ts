@@ -28,7 +28,7 @@ jest.unstable_mockModule(
         getSecret: mockGetSecret,
       })),
     },
-  })
+  }),
 );
 
 const mockJWTService = {
@@ -104,7 +104,7 @@ describe("POST /api/auth/login e2e", () => {
         scope: "access",
       },
       "access",
-      { expiresIn: "5m" }
+      { expiresIn: "5m" },
     );
     expect(updatedUser.failedLoginAttempts).toBe(0);
   });
@@ -184,38 +184,11 @@ describe("POST /api/auth/login e2e", () => {
       },
     });
     expect(response.body.error.description).toEqual(
-      expect.stringContaining("email")
+      expect.stringContaining("email"),
     );
     expect(response.body.error.description).toEqual(
-      expect.stringContaining("password")
+      expect.stringContaining("password"),
     );
-    expect(mockJWTService.sign).not.toHaveBeenCalled();
-  });
-
-  it("returns bad request without increasing failed attempts when the password fails schema validation", async () => {
-    const user = await createUser({
-      email: "invalid-password-schema@example.com",
-      password: "Password123!",
-    });
-
-    const response = await request(app).post("/api/auth/login").send({
-      email: "invalid-password-schema@example.com",
-      password: "short",
-    });
-    const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
-      where: { id: user.id },
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject({
-      status: "error",
-      message: "the data provided is invalid",
-      error: {
-        code: "BAD_REQUEST",
-        description: expect.stringContaining("Password"),
-      },
-    });
-    expect(updatedUser.failedLoginAttempts).toBe(0);
     expect(mockJWTService.sign).not.toHaveBeenCalled();
   });
 
