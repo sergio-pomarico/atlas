@@ -1,9 +1,8 @@
 import { z } from "zod";
-import passwordSchema from "../password.ts";
 
 export const loginSchema = z.object({
   email: z.email(),
-  password: passwordSchema,
+  password: z.string().min(1).max(64),
 });
 
 export type LoginPayload = z.infer<typeof loginSchema>;
