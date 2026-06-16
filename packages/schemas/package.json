@@ -8,6 +8,7 @@
     "access": "public"
   },
   "dependencies": {
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "zod-validation-error": "^5.0.0"
   }
 }

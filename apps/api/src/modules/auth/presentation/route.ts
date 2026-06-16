@@ -1,3 +1,5 @@
+import { loginSchema } from "@atlas/schemas/lib/auth/login.ts";
+import { schemaValidation } from "@shared/infrastructure/middlewares/validation.ts";
 import { Router } from "express";
 import container from "../infrastructure/container.ts";
 import type { AuthController } from "./controller.ts";
@@ -12,6 +14,10 @@ export class AuthRoutes {
   }
 
   routes(): void {
-    this.router.post("/login", this.controller.login);
+    this.router.post(
+      "/login",
+      schemaValidation(loginSchema),
+      this.controller.login
+    );
   }
 }

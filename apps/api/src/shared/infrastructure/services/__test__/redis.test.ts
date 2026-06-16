@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import {
-  startRedisTestService,
   type StartedRedisTestService,
+  startRedisTestService,
 } from "@helpers/test/redis.ts";
+import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import {
   RedisService,
   RedisServiceError,
@@ -28,7 +28,7 @@ describe("RedisService integration", () => {
   it("stores and retrieves a string value", async () => {
     await redis.redisService.set("redis-service:string", "active");
     await expect(redis.redisService.get("redis-service:string")).resolves.toBe(
-      "active",
+      "active"
     );
   });
 
@@ -36,10 +36,10 @@ describe("RedisService integration", () => {
     await redis.redisService.set("redis-service:number", 42);
     await redis.redisService.set("redis-service:boolean", true);
     await expect(redis.redisService.get("redis-service:number")).resolves.toBe(
-      "42",
+      "42"
     );
     await expect(redis.redisService.get("redis-service:boolean")).resolves.toBe(
-      "true",
+      "true"
     );
   });
 
@@ -52,7 +52,7 @@ describe("RedisService integration", () => {
 
     await redis.redisService.setJson("redis-service:user", user);
     await expect(
-      redis.redisService.getJson<CachedUser>("redis-service:user"),
+      redis.redisService.getJson<CachedUser>("redis-service:user")
     ).resolves.toEqual(user);
   });
 
@@ -60,52 +60,52 @@ describe("RedisService integration", () => {
     await redis.redisService.set("redis-service:overwrite", "first");
     await redis.redisService.set("redis-service:overwrite", "second");
     await expect(
-      redis.redisService.get("redis-service:overwrite"),
+      redis.redisService.get("redis-service:overwrite")
     ).resolves.toBe("second");
   });
 
   it("deletes a single existing key", async () => {
     await redis.redisService.set("redis-service:delete", "value");
     await expect(
-      redis.redisService.delete("redis-service:delete"),
+      redis.redisService.delete("redis-service:delete")
     ).resolves.toBe(true);
     await expect(
-      redis.redisService.get("redis-service:delete"),
+      redis.redisService.get("redis-service:delete")
     ).resolves.toBeNull();
   });
 
   it("returns false when deleting a missing key", async () => {
     await expect(
-      redis.redisService.delete("redis-service:missing"),
+      redis.redisService.delete("redis-service:missing")
     ).resolves.toBe(false);
   });
 
   it("throws a RedisServiceError when initialized with a different URL", () => {
     expect(() => RedisService.getInstance("redis://localhost:6380")).toThrow(
-      RedisServiceError,
+      RedisServiceError
     );
   });
 
   it("throws when reading a non JSON value as JSON", async () => {
     await redis.redisService.set("redis-service:invalid-json", "not-json");
     await expect(
-      redis.redisService.getJson("redis-service:invalid-json"),
+      redis.redisService.getJson("redis-service:invalid-json")
     ).rejects.toBeInstanceOf(RedisServiceError);
     await expect(
-      redis.redisService.getJson("redis-service:invalid-json"),
+      redis.redisService.getJson("redis-service:invalid-json")
     ).rejects.toThrow(
-      'Redis value for key "redis-service:invalid-json" is not valid JSON.',
+      'Redis value for key "redis-service:invalid-json" is not valid JSON.'
     );
   });
 
   it("expires keys using the provided TTL", async () => {
     await redis.redisService.set("redis-service:ttl", "short-lived", 1);
     await expect(redis.redisService.get("redis-service:ttl")).resolves.toBe(
-      "short-lived",
+      "short-lived"
     );
     await new Promise((resolve) => setTimeout(resolve, 2000));
     await expect(
-      redis.redisService.get("redis-service:ttl"),
+      redis.redisService.get("redis-service:ttl")
     ).resolves.toBeNull();
   }, 15_000);
 });

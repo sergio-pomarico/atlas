@@ -13,7 +13,7 @@ export async function startRedisTestService(): Promise<StartedRedisTestService> 
     .start();
 
   const redisUrl = `redis://${container.getHost()}:${container.getMappedPort(
-    6379,
+    6379
   )}`;
   const redisService = RedisService.getInstance(redisUrl);
   await redisService.connect();
@@ -27,7 +27,7 @@ export async function startRedisTestService(): Promise<StartedRedisTestService> 
 
 async function stopRedisTestService(
   redisService: RedisService,
-  container: StartedTestContainer,
+  container: StartedTestContainer
 ): Promise<void> {
   await redisService.disconnect();
   await container.stop();
