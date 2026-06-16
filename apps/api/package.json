@@ -26,6 +26,7 @@
     "@infisical/sdk": "^4.0.6",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "@upstash/redis": "^1.35.3",
     "argon2": "^0.44.0",
     "express": "^5.2.1",
     "inversify": "^7.11.0",
