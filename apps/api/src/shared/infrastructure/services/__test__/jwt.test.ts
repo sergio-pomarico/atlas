@@ -11,9 +11,8 @@ import jwt from "jsonwebtoken";
 
 type JWTModule = typeof import("@shared/infrastructure/services/jwt.ts");
 
-const mockGetSecret = jest.fn<
-  (key: string) => Promise<{ secretValue: string }>
->();
+const mockGetSecret =
+  jest.fn<(key: string) => Promise<{ secretValue: string }>>();
 
 jest.unstable_mockModule(
   "@shared/infrastructure/services/secret-manager.ts",
@@ -23,7 +22,7 @@ jest.unstable_mockModule(
         getSecret: mockGetSecret,
       })),
     },
-  }),
+  })
 );
 
 let JWTService: JWTModule["JWTService"];
@@ -63,8 +62,8 @@ describe("JWTService", () => {
       jwtService.sign(
         { sub: "user-123", email: "user@example.com", scope: "access" },
         "access",
-        { expiresIn: "5m" },
-      ),
+        { expiresIn: "5m" }
+      )
     ).resolves.toBe("signed-token");
 
     expect(mockGetSecret).toHaveBeenCalledWith("access_key_private");
@@ -99,7 +98,7 @@ describe("JWTService", () => {
         algorithm: "HS256",
         audience: "bad-client",
         issuer: "bad-api",
-      },
+      }
     );
 
     expect(signSpy.mock.calls[0]?.[2]).toEqual({
@@ -120,7 +119,7 @@ describe("JWTService", () => {
 
     await jwtService.sign(
       { sub: "user-123", email: "user@example.com", scope: "refresh" },
-      "refresh",
+      "refresh"
     );
 
     expect(mockGetSecret).toHaveBeenCalledWith("refresh_key_private");
@@ -138,8 +137,8 @@ describe("JWTService", () => {
     await expect(
       jwtService.sign(
         { sub: "user-123", email: "user@example.com", scope: "access" },
-        "access",
-      ),
+        "access"
+      )
     ).resolves.toBeNull();
   });
 
@@ -155,8 +154,8 @@ describe("JWTService", () => {
     await expect(
       jwtService.sign(
         { sub: "user-123", email: "user@example.com", scope: "access" },
-        "access",
-      ),
+        "access"
+      )
     ).resolves.toBeNull();
   });
 
@@ -179,7 +178,7 @@ describe("JWTService", () => {
     const jwtService = JWTService.getInstance();
 
     await expect(jwtService.verify<Token>("jwt-token", "access")).resolves.toBe(
-      decodedToken,
+      decodedToken
     );
     expect(mockGetSecret).toHaveBeenCalledWith("access_key_public");
     expect(verifySpy).toHaveBeenCalledWith(
@@ -190,7 +189,7 @@ describe("JWTService", () => {
         audience: JWT_AUDIENCE,
         issuer: JWT_ISSUER,
       },
-      expect.any(Function),
+      expect.any(Function)
     );
   });
 
@@ -204,7 +203,7 @@ describe("JWTService", () => {
     const jwtService = JWTService.getInstance();
 
     await expect(
-      jwtService.verify<Token>("jwt-token", "access"),
+      jwtService.verify<Token>("jwt-token", "access")
     ).resolves.toBeNull();
   });
 
@@ -215,13 +214,13 @@ describe("JWTService", () => {
       .mockImplementation((_token, _secret, _options, callback) => {
         callback?.(
           new jwt.JsonWebTokenError("jwt audience invalid"),
-          undefined,
+          undefined
         );
       });
     const jwtService = JWTService.getInstance();
 
     await expect(
-      jwtService.verify<Token>("jwt-token", "access"),
+      jwtService.verify<Token>("jwt-token", "access")
     ).resolves.toBeNull();
   });
 
@@ -235,7 +234,7 @@ describe("JWTService", () => {
     const jwtService = JWTService.getInstance();
 
     await expect(
-      jwtService.verify<Token>("jwt-token", "access"),
+      jwtService.verify<Token>("jwt-token", "access")
     ).resolves.toBeNull();
   });
 });

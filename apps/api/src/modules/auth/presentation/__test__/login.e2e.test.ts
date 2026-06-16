@@ -154,6 +154,71 @@ describe("POST /api/auth/login e2e", () => {
     expect(mockJWTService.sign).not.toHaveBeenCalled();
   });
 
+  it("returns bad request when the email format is invalid", async () => {
+    const response = await request(app).post("/api/auth/login").send({
+      email: "invalid-email",
+      password: "Password123!",
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      status: "error",
+      message: "the data provided is invalid",
+      error: {
+        code: "BAD_REQUEST",
+        description: expect.stringContaining("email"),
+      },
+    });
+    expect(mockJWTService.sign).not.toHaveBeenCalled();
+  });
+
+  it("returns bad request when required login fields are missing", async () => {
+    const response = await request(app).post("/api/auth/login").send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      status: "error",
+      message: "the data provided is invalid",
+      error: {
+        code: "BAD_REQUEST",
+      },
+    });
+    expect(response.body.error.description).toEqual(
+      expect.stringContaining("email")
+    );
+    expect(response.body.error.description).toEqual(
+      expect.stringContaining("password")
+    );
+    expect(mockJWTService.sign).not.toHaveBeenCalled();
+  });
+
+  it("returns bad request without increasing failed attempts when the password fails schema validation", async () => {
+    const user = await createUser({
+      email: "invalid-password-schema@example.com",
+      password: "Password123!",
+    });
+
+    const response = await request(app).post("/api/auth/login").send({
+      email: "invalid-password-schema@example.com",
+      password: "short",
+    });
+    const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      status: "error",
+      message: "the data provided is invalid",
+      error: {
+        code: "BAD_REQUEST",
+        description: expect.stringContaining("Password"),
+      },
+    });
+    expect(updatedUser.failedLoginAttempts).toBe(0);
+    expect(mockJWTService.sign).not.toHaveBeenCalled();
+  });
+
   it("returns forbidden when the user is blocked", async () => {
     await createUser({
       email: "blocked@example.com",

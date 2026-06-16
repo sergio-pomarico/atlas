@@ -10,9 +10,9 @@
     "paths": {
       "@helpers/*": ["./helpers/*"],
       "@shared/*": ["./src/shared/*"],
-      "@modules/*": ["./src/modules/*"],
+      "@modules/*": ["./src/modules/*"]
     },
-    "strictNullChecks": true,
+    "strictNullChecks": true
   },
   "exclude": ["node_modules"],
   "include": [
@@ -22,6 +22,6 @@
     "./jest.config.ts",
     "./prisma.config.ts",
     "./helpers/**/*",
-    "setup-tests.ts",
-  ],
+    "setup-tests.ts"
+  ]
 }
