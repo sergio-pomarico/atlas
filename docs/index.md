@@ -4,8 +4,8 @@ Bienvenido a la documentación de Atlas. Aquí encontrarás recursos organizados
 
 ## Diseño
 
-- [Guías de Diseño](./design/) - Principios y guías de diseño fundamentales
-- [Documentación de Diseño](./design-docs/) - Especificaciones detalladas de diseño y componentes
+- [Documentación del Backend](./backend/) - Especificaciones detalladas de arquitectura y API
+- [Documentación del Frontend](./frontend/) - Guías de componentes, estilos y mejores prácticas
 
 ## Comenzando
 
