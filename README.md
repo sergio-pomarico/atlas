@@ -96,8 +96,8 @@ pnpm run test
 ### Linting & Type Checking
 
 ```bash
-pnpm run lint
-pnpm run typecheck
+pnpm run check
+pnpm run type-check
 ```
 
 ## 🤝 Contribuir

@@ -47,7 +47,7 @@ async function doSomethingWithSecret() {
 
 Por motivos de seguridad, la URL de la base de datos no se almacena en el archivo `.env` local, sino que se inyecta dinámicamente desde Infisical antes de ejecutar los comandos de Prisma. 
 
-Para lograr esto, existe un script especializado (`apps/api/scripts/migrate.ts`) que envuelve la ejecución de los comandos de Prisma:
+Para lograr esto, existe un script especializado (`apps/api/helpers/scripts/migrate.ts`) que envuelve la ejecución de los comandos de Prisma:
 1. Autentica con Infisical.
 2. Obtiene el secreto `DATABASE_URL`.
 3. Lo inyecta de forma temporal en las variables de entorno (`process.env.DATABASE_URL`).
@@ -57,26 +57,26 @@ Para lograr esto, existe un script especializado (`apps/api/scripts/migrate.ts`)
 
 En el `package.json` existen scripts definidos para facilitar esta tarea. Para interactuar con la base de datos debes utilizar siempre estos scripts en lugar de ejecutar los comandos directos de `prisma`. 
 
-Desde el directorio correspondiente (ej: `apps/api`), puedes ejecutar:
+Desde la raíz del repositorio, puedes ejecutar:
 
 - **Generar y aplicar migraciones en desarrollo:**
   ```bash
-  pnpm run db:migrate
+  pnpm --filter @atlas/api db:migrate
   ```
 
 - **Aplicar migraciones en producción:**
   ```bash
-  pnpm run db:migrate:deploy
+  pnpm --filter @atlas/api db:migrate:deploy
   ```
 
 - **Hacer un push rápido a la BD (solo en desarrollo):**
   ```bash
-  pnpm run db:push
+  pnpm --filter @atlas/api db:push
   ```
 
 - **Abrir Prisma Studio:**
   ```bash
-  pnpm run db:studio
+  pnpm --filter @atlas/api db:studio
   ```
 
 ### Seguridad en los Scripts
