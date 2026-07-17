@@ -149,3 +149,4 @@ turbo.log
 
 # Infisical config file
 .infisical.json
+.fallow/
