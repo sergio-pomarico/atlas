@@ -13,6 +13,7 @@ export class AsyncStorageService {
     return AsyncStorageService.instance;
   }
 
+  // fallow-ignore-next-line unused-class-member
   getStore(): Map<string, string> | undefined {
     return this.als.getStore();
   }

@@ -33,6 +33,7 @@ export class Result<T, E> {
     return new Result<T, E>(false, error);
   }
 
+  // fallow-ignore-next-line unused-class-member
   getData(): T {
     if (!this.isSuccess) {
       throw new ResultException("Cannot get data from an error result");
@@ -40,6 +41,7 @@ export class Result<T, E> {
     return this.data as T;
   }
 
+  // fallow-ignore-next-line unused-class-member
   getError(): E {
     if (this.isSuccess) {
       throw new ResultException("Cannot get error from a success result");

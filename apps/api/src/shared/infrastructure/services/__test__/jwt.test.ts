@@ -49,6 +49,7 @@ describe("JWTService", () => {
     expect(secondInstance).toBe(firstInstance);
   });
 
+  // fallow-ignore-next-line complexity
   it("signs access tokens with RS256, issuer, and audience options", async () => {
     mockGetSecret.mockResolvedValue({ secretValue: "private-key" } as never);
     const signSpy = jest

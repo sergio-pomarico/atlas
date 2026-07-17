@@ -10,6 +10,7 @@ export function omit<Data extends object, Keys extends keyof Data>(
   return result as Omit<Data, Keys>;
 }
 
+// fallow-ignore-next-line unused-export
 export function pick<Data extends object, Keys extends keyof Data>(
   data: Data,
   keys: Keys[]
