@@ -1,0 +1,14 @@
+name: Fallow analysis
+on: [push, pull_request]
+
+jobs:
+  fallow:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v4
+      - uses: fallow-rs/fallow@v3
+        with:
+          format: sarif
+      - uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: fallow-results.sarif
