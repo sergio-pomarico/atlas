@@ -1,15 +1,16 @@
 name: Fallow analysis
-on: [push, pull_request]
+on: pull_request
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   fallow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -30,6 +31,3 @@ jobs:
           command: audit
           gate: new-only
           format: sarif
-      - uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: fallow-results.sarif
