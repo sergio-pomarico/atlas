@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-export
 import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
 

@@ -41,11 +41,13 @@ export class EmailService {
     this.secretManager = secretManager;
   }
 
+  // fallow-ignore-next-line unused-class-member
   async initialize(): Promise<void> {
     const resendApiKey = await this.secretManager.getSecret("RESEND_API_KEY");
     this.transporter = new Resend(resendApiKey.secretKey);
   }
 
+  // fallow-ignore-next-line unused-class-member
   send = async (options: SendMailOptions): Promise<boolean> => {
     if (!this.transporter) {
       throw EmailServiceError.notInitialized();

@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-file
+
 import AppError from "@shared/domain/errors/app.ts";
 import { ErrorCode } from "@shared/domain/errors/code.ts";
 import {

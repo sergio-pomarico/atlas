@@ -69,14 +69,17 @@ export class Logger {
     return { ...args, requestId };
   }
 
+  // fallow-ignore-next-line unused-class-member
   info(message: string, args?: unknown) {
     this.logger.info(this.enrichArgs(args), message);
   }
 
+  // fallow-ignore-next-line unused-class-member
   warn(message: string, args?: unknown) {
     this.logger.warn(this.enrichArgs(args), message);
   }
 
+  // fallow-ignore-next-line unused-class-member
   error(message: string, args?: unknown) {
     this.logger.error(this.enrichArgs(args), message);
   }
@@ -85,9 +88,8 @@ export class Logger {
     this.logger.fatal(this.enrichArgs(args), message);
   }
 
+  // fallow-ignore-next-line unused-class-member
   debug(message: string, args?: unknown) {
     this.logger.debug(this.enrichArgs(args), message);
   }
 }
-
-export const logger = Logger.getInstance();

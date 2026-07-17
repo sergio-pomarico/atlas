@@ -36,6 +36,7 @@ export class Server {
     });
   }
 
+  // fallow-ignore-next-line unused-class-member
   stop() {
     this.listener?.close();
   }

@@ -64,4 +64,5 @@ function Button({
   );
 }
 
+// fallow-ignore-next-line unused-export
 export { Button, buttonVariants };

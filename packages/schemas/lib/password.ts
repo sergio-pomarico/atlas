@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-file
+
 import { z } from "zod";
 
 const UPPERCASE_REGEX = /[A-Z]/;

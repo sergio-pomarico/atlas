@@ -28,6 +28,7 @@ export class User
     this.updatedAt = props.updatedAt ?? new Date();
   }
 
+  // fallow-ignore-next-line unused-class-member
   equals(other: User): boolean {
     return this.id === other.id;
   }
