@@ -1,0 +1,28 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "apps/api/**/__test__/**/*.test.ts",
+    "apps/api/helpers/test/**/*.ts"
+  ],
+  "workspaces": {
+    "patterns": [
+      "apps/*",
+      "packages/*"
+    ]
+  },
+  "ignorePatterns": ["packages/entities/**"],
+  "ignoreDependencies": [
+    "@eslint/js",
+    "globals",
+    "pg",
+    "pino-pretty",
+    "tsconfig-paths",
+    "typescript-eslint"
+  ],
+  "duplicates": {
+    "minOccurrences": 3
+  },
+  "rules": {
+    "unused-dependencies": "warn"
+  }
+}
