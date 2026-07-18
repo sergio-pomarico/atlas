@@ -5,7 +5,7 @@ Atlas is an ERP for small and medium-sized pharmaceutical distributors. It is or
 ## Shared rules
 
 - Prefer small, cohesive changes; avoid abstractions until there is a concrete need.
-- Executable configuration (`package.json`, `turbo.json`, and `biome.jsonc`) takes precedence over documentation when they differ.
+- Executable configuration (`package.json`, `turbo.json`, `biome.jsonc`, and `.fallowrc.json`) takes precedence over documentation when they differ.
 - Use Biome through Ultracite for formatting and linting. Commit messages follow Conventional Commits.
 
 ## Root commands

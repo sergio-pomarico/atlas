@@ -174,7 +174,7 @@ Detalles importantes:
 - Se usa `NODE_OPTIONS=--experimental-vm-modules` porque el proyecto usa ESM.
 - `setup-tests.ts` importa `reflect-metadata`, necesario para Inversify y decoradores.
 - Jest usa `ts-jest` para transformar TypeScript.
-- La cobertura se recolecta con el provider `v8`.
+- La cobertura se recolecta con el provider `babel`, que genera cobertura Istanbul compatible con Fallow.
 
 Aliases disponibles en tests:
 

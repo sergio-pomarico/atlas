@@ -37,6 +37,7 @@ Include screenshots or video demonstrating the new feature, if applicable.
 - [ ] Code follows the project's coding standards
 - [ ] Unit tests covering the new feature have been added
 - [ ] All existing tests pass
+- [ ] Fallow audit passes, or intentional findings are documented and suppressed
 - [ ] The documentation has been updated to reflect the new feature
 
 ## 📝 Additional Notes

@@ -106,7 +106,7 @@ pnpm run type-check
 
 1. Crea una rama de la característica (`git checkout -b feature/nueva-caracteristica`)
 2. Haz commit de tus cambios usando Conventional Commits (ejemplos: `feat(api): agregar endpoint de stock`, `fix(ui): resolver error del modal`)
-3. Sube la rama (`git push origin feature/nueva-caracteristica`)
+3. Sube la rama (`git push origin feat/new-feature`)
 4. Abre un Pull Request
 
 ### Conventional Commits
