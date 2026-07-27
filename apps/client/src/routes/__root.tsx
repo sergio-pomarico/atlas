@@ -1,18 +1,15 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 
-export const Route = createRootRoute({
+export type RouterContext = {
+  auth: {
+    isAuthenticated: boolean;
+  };
+};
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
 });
 
 function RootLayout() {
-  return (
-    <div>
-      <header>
-        <h1>Atlas</h1>
-      </header>
-      <main>
-        <Outlet />
-      </main>
-    </div>
-  );
+  return <Outlet />;
 }
