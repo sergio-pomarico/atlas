@@ -1,10 +1,10 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 
-export type RouterContext = {
+export interface RouterContext {
   auth: {
     isAuthenticated: boolean;
   };
-};
+}
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
