@@ -1,7 +1,13 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useIsFetching,
+} from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { useRouterAuth } from "./hooks/use-router-auth.ts";
 import { router } from "./router.ts";
+import { useUIStore } from "./stores/ui-store.ts";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +20,19 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <QueryLoadingOverlay />
       <RouterProvider context={{ auth }} router={router} />
     </QueryClientProvider>
   );
+}
+
+function QueryLoadingOverlay() {
+  const isFetching = useIsFetching();
+  const setLoading = useUIStore((state) => state.setLoading);
+
+  useEffect(() => {
+    setLoading(isFetching > 0);
+  }, [isFetching, setLoading]);
+
+  return null;
 }
