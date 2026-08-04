@@ -14,7 +14,7 @@ function Home() {
           <Link to="/login">Login</Link>
         </Button>
         <Button asChild variant="outline">
-          <Link to="/app">App</Link>
+          <Link to="/dashboard">Dashboard</Link>
         </Button>
       </nav>
     </section>
