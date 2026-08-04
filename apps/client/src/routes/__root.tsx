@@ -1,4 +1,6 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { LoadingOverlay } from "@/components/ui/loading";
+import { useUIStore } from "@/stores/ui-store";
 
 export interface RouterContext {
   auth: {
@@ -11,5 +13,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootLayout() {
-  return <Outlet />;
+  const isLoading = useUIStore((state) => state.isLoading);
+  const loadingMessage = useUIStore((state) => state.loadingMessage);
+  return (
+    <>
+      <Outlet />
+      <LoadingOverlay isVisible={isLoading} message={loadingMessage} />
+    </>
+  );
 }

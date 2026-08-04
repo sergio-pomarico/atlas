@@ -135,6 +135,9 @@ importers:
 
   apps/client:
     dependencies:
+      '@atlas/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       '@atlas/ts-config':
         specifier: workspace:*
         version: link:../../packages/ts-config

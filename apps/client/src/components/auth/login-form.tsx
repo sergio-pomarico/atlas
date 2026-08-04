@@ -1,18 +1,37 @@
+import {
+  type LoginPayload,
+  loginSchema,
+} from "@atlas/schemas/lib/auth/login.ts";
 import { useForm } from "@tanstack/react-form";
 import { Link } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export interface LoginFormProps {
+  onSubmitForm: (values: LoginPayload) => void;
+}
 
-export function LoginForm() {
+function FormError({ error, id }: { error: string | false; id: string }) {
+  return (
+    <p
+      className="min-h-5 text-destructive text-sm"
+      id={id}
+      role={error ? "alert" : undefined}
+    >
+      {error || null}
+    </p>
+  );
+}
+
+export function LoginForm({ onSubmitForm }: LoginFormProps) {
   const form = useForm({
     defaultValues: {
       email: "",
       password: "",
     },
-    onSubmit: () => {
-      // Authentication is intentionally not connected in this UI-only iteration.
+    onSubmit: ({ value }) => {
+      onSubmitForm(value);
     },
   });
 
@@ -33,8 +52,7 @@ export function LoginForm() {
             if (!value) {
               return "Ingresa tu correo electronico.";
             }
-
-            return emailPattern.test(value)
+            return loginSchema.shape.email.safeParse(value).success
               ? undefined
               : "Ingresa un correo electronico valido.";
           },
@@ -44,17 +62,15 @@ export function LoginForm() {
           const error =
             field.state.meta.isTouched && field.state.meta.errors[0];
           const errorId = `${field.name}-error`;
-
           return (
             <div className="space-y-2">
               <label className="font-medium text-sm" htmlFor={field.name}>
                 Correo electronico
               </label>
-              <input
+              <Input
                 aria-describedby={error ? errorId : undefined}
                 aria-invalid={Boolean(error)}
                 autoComplete="email"
-                className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
                 id={field.name}
                 name={field.name}
                 onBlur={field.handleBlur}
@@ -63,15 +79,7 @@ export function LoginForm() {
                 type="email"
                 value={field.state.value}
               />
-              {error ? (
-                <p
-                  className="text-destructive text-sm"
-                  id={errorId}
-                  role="alert"
-                >
-                  {error}
-                </p>
-              ) : null}
+              <FormError error={error} id={errorId} />
             </div>
           );
         }}
@@ -87,7 +95,6 @@ export function LoginForm() {
           const error =
             field.state.meta.isTouched && field.state.meta.errors[0];
           const errorId = `${field.name}-error`;
-
           return (
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-4">
@@ -101,11 +108,10 @@ export function LoginForm() {
                   Olvide mi contrasena
                 </Link>
               </div>
-              <input
+              <Input
                 aria-describedby={error ? errorId : undefined}
                 aria-invalid={Boolean(error)}
                 autoComplete="current-password"
-                className="h-11 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20"
                 id={field.name}
                 name={field.name}
                 onBlur={field.handleBlur}
@@ -114,20 +120,11 @@ export function LoginForm() {
                 type="password"
                 value={field.state.value}
               />
-              {error ? (
-                <p
-                  className="text-destructive text-sm"
-                  id={errorId}
-                  role="alert"
-                >
-                  {error}
-                </p>
-              ) : null}
+              <FormError error={error} id={errorId} />
             </div>
           );
         }}
       </form.Field>
-
       <Button className="h-11 w-full" size="lg" type="submit">
         Iniciar sesion
       </Button>
