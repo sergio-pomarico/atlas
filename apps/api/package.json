@@ -13,7 +13,8 @@
     "db:migrate:status": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts migrate status",
     "db:push": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts db push",
     "db:studio": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts studio",
-    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests"
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
+    "style-check": "fallow"
   },
   "type": "module",
   "author": "Sergio Pomárico <sergiodavid21@gmail.com>",
@@ -27,6 +28,7 @@
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "argon2": "^0.44.0",
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "inversify": "^7.11.0",
     "jsonwebtoken": "^9.0.3",
@@ -39,6 +41,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^30.3.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.2.0",
