@@ -4,7 +4,7 @@ import { LoadingOverlay } from "@/components/ui/loading";
 import { Toaster } from "@/components/ui/sonner";
 import { useUIStore } from "@/stores/ui-store";
 
-export interface RouterContext {
+interface RouterContext {
   auth: {
     isAuthenticated: boolean;
   };

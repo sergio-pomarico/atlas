@@ -11,7 +11,7 @@ export type HTTPClientConfig = AxiosRequestConfig & {
   getAccessToken?: () => string | null;
 };
 
-export class HTTPClientConfigurationError extends Error {
+class HTTPClientConfigurationError extends Error {
   constructor() {
     super("HTTPClient requires a non-empty baseURL.");
     this.name = "HTTPClientConfigurationError";
@@ -73,6 +73,7 @@ export class HTTPClient {
    * @param {import("axios").AxiosRequestConfig} [config] - axios request configuration.
    * @returns {Promise<AxiosResponse<T>>} - HTTP axios response.
    */
+  // fallow-ignore-next-line unused-class-member
   request<T = unknown, B = unknown>(
     config: AxiosRequestConfig<B>
   ): Promise<AxiosResponse<T>> {
@@ -86,6 +87,7 @@ export class HTTPClient {
    * @param {import("axios").AxiosRequestConfig} [config] - axios request configuration.
    * @returns {Promise<AxiosResponse<T>>} HTTP `axios` response.
    */
+  // fallow-ignore-next-line unused-class-member
   get<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
@@ -119,6 +121,7 @@ export class HTTPClient {
    * @param {import("axios").AxiosRequestConfig} [config] - axios request configuration.
    * @returns {Promise<AxiosResponse<T>>} - HTTP [axios] response.
    */
+  // fallow-ignore-next-line unused-class-member
   put<T, B>(
     url: string,
     data: B,
@@ -136,6 +139,7 @@ export class HTTPClient {
    * @param {import("axios").AxiosRequestConfig} [config] - axios request configuration.
    * @returns {Promise<AxiosResponse<T>>} - HTTP [axios] response.
    */
+  // fallow-ignore-next-line unused-class-member
   patch<T, B>(
     url: string,
     data: B,
@@ -151,6 +155,7 @@ export class HTTPClient {
    * @param {import("axios").AxiosRequestConfig} [config] - axios request configuration.
    * @returns {Promise<AxiosResponse<T>>} - HTTP [axios] response.
    */
+  // fallow-ignore-next-line unused-class-member
   delete<T = unknown>(
     url: string,
     config?: AxiosRequestConfig
