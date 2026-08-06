@@ -12,7 +12,13 @@ export interface LoginFormProps {
   onSubmitForm: (values: LoginPayload) => void;
 }
 
-function FormError({ error, id }: { error: string | false; id: string }) {
+function FormError({
+  error,
+  id,
+}: {
+  error: string | false | undefined;
+  id: string;
+}) {
   return (
     <p
       className="min-h-5 text-destructive text-sm"

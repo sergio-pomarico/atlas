@@ -2,6 +2,7 @@ import {
   QueryClient,
   QueryClientProvider,
   useIsFetching,
+  useIsMutating,
 } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -28,11 +29,12 @@ export function App() {
 
 function QueryLoadingOverlay() {
   const isFetching = useIsFetching();
+  const isMutating = useIsMutating();
   const setLoading = useUIStore((state) => state.setLoading);
 
   useEffect(() => {
-    setLoading(isFetching > 0);
-  }, [isFetching, setLoading]);
+    setLoading(isFetching > 0 || isMutating > 0);
+  }, [isFetching, isMutating, setLoading]);
 
   return null;
 }
