@@ -1,5 +1,7 @@
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { ErrorToast } from "@/components/ui/error-toast";
 import { LoadingOverlay } from "@/components/ui/loading";
+import { Toaster } from "@/components/ui/sonner";
 import { useUIStore } from "@/stores/ui-store";
 
 export interface RouterContext {
@@ -19,6 +21,8 @@ function RootLayout() {
     <>
       <Outlet />
       <LoadingOverlay isVisible={isLoading} message={loadingMessage} />
+      <Toaster />
+      <ErrorToast />
     </>
   );
 }

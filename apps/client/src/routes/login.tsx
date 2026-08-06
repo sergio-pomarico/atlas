@@ -1,13 +1,36 @@
-import { createFileRoute } from "@tanstack/react-router";
-
+import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
+import { useMutation } from "@tanstack/react-query";
+import {
+  createFileRoute,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { LoginForm } from "@/components/auth/login-form";
+import type { AuthServiceError, LoginResult } from "@/services/auth-service";
+import { authService } from "@/services/auth-service";
+import { useAuthStore } from "@/stores/auth-store";
+import { useUIStore } from "@/stores/ui-store";
 
 export const Route = createFileRoute("/login")({
   component: Login,
 });
 
 function Login() {
+  const router = useRouter();
+  const navigate = useNavigate();
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const showError = useUIStore((state) => state.showError);
+  const { mutate } = useMutation<LoginResult, AuthServiceError, LoginPayload>({
+    mutationFn: (values) => authService.login(values),
+    onSuccess: async ({ accessToken }) => {
+      setAccessToken(accessToken);
+      await router.invalidate();
+      await navigate({ to: "/dashboard" });
+    },
+    onError: (error) => showError(error.message),
+  });
+  const onSubmit = (values: LoginPayload) => mutate(values);
   return (
     <AuthLayout>
       <div className="mb-10">
@@ -36,7 +59,7 @@ function Login() {
           Ingresa tus credenciales para acceder a tu operacion.
         </p>
       </div>
-      <LoginForm />
+      <LoginForm onSubmitForm={onSubmit} />
     </AuthLayout>
   );
 }

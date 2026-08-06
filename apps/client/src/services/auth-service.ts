@@ -1,6 +1,7 @@
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import { isAxiosError } from "axios";
 import { HTTPClient, type HTTPClientConfig } from "@/shared/axios/axios";
+import { buildConfig } from "@/shared/axios/config";
 
 export interface LoginResult {
   accessToken: string;
@@ -76,3 +77,7 @@ export class AuthService {
     }
   }
 }
+
+export const authService = new AuthService(
+  buildConfig(import.meta.env.VITE_API_BASE_URL, undefined, true)
+);
