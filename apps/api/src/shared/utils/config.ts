@@ -1,23 +1,48 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
 const __dirname = import.meta.dirname;
+const localEnvFilePath = path.resolve(__dirname, "../../../.env");
+const defaultCorsOrigin = "http://localhost:5173";
 
-process.loadEnvFile(path.resolve(__dirname, "../../../.env"));
-export const envConfig = () => ({
-  environment: process.env.NODE_ENV || "dev",
-  port: Number.parseInt(process.env.PORT ?? "3000", 10),
-  secretToken: process.env.SECRET_MANAGER_TOKEN ?? "",
-  infisicalProjectId: process.env.INFISICAL_PROJECT_ID ?? "",
-  corsOrigin: getCorsOrigin(),
-});
+loadLocalEnvFile();
 
-function getCorsOrigin(): string | null {
-  const configuredOrigin = process.env.CORS_ORIGIN?.trim();
+export const envConfig = (env: NodeJS.ProcessEnv = process.env) => {
+  const environment = resolveEnvironment(env);
 
-  if (configuredOrigin) {
-    return configuredOrigin;
+  return {
+    environment,
+    port: resolvePort(env),
+    secretToken: env.SECRET_MANAGER_TOKEN ?? "",
+    infisicalProjectId: env.INFISICAL_PROJECT_ID ?? "",
+    corsOrigin: resolveCorsOrigin(env.CORS_ORIGIN, environment),
+  };
+};
+
+export function loadLocalEnvFile(filePath = localEnvFilePath): void {
+  if (existsSync(filePath)) {
+    process.loadEnvFile(filePath);
+  }
+}
+
+function resolveEnvironment(env: NodeJS.ProcessEnv): string {
+  return env.NODE_ENV ?? "dev";
+}
+
+function resolvePort(env: NodeJS.ProcessEnv): number {
+  return Number.parseInt(env.PORT ?? "3000", 10);
+}
+
+function resolveCorsOrigin(
+  configuredOrigin: string | undefined,
+  environment: string
+): string | null {
+  const origin = configuredOrigin?.trim();
+
+  if (origin) {
+    return origin;
   }
 
-  return process.env.NODE_ENV === "dev" ? "http://localhost:5173" : null;
+  return environment === "dev" ? defaultCorsOrigin : null;
 }
