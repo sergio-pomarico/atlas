@@ -4,6 +4,7 @@ import type {
   ServerResponse,
 } from "node:http";
 import { createServer } from "node:http";
+import { corsMiddleware } from "@shared/infrastructure/middlewares/cors.ts";
 import errorMiddleware from "@shared/infrastructure/middlewares/error.ts";
 import requestIDMiddleware from "@shared/infrastructure/middlewares/request-id.ts";
 import { AppRoutes } from "@shared/infrastructure/routes.ts";
@@ -21,6 +22,7 @@ export class Server {
   http: HTTPServer;
 
   constructor(port: number) {
+    this.app.use(corsMiddleware);
     this.app.use(express.json());
     this.app.use(requestIDMiddleware);
     this.app.use(express.urlencoded({ extended: true }));
