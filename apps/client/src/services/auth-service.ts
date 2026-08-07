@@ -43,7 +43,6 @@ export class AuthServiceError extends Error {
     if (error instanceof AuthServiceError) {
       return error;
     }
-
     if (isAxiosError<ApiErrorResponse>(error)) {
       return new AuthServiceError({
         message: error.response?.data?.message ?? error.message,
@@ -51,9 +50,8 @@ export class AuthServiceError extends Error {
         code: error.response?.data?.error?.code ?? error.code,
       });
     }
-
     return new AuthServiceError({
-      message: error instanceof Error ? error.message : "Unable to log in.",
+      message: error instanceof Error ? error.message : "Something went wrong.",
     });
   }
 }
@@ -67,11 +65,12 @@ export class AuthService {
 
   async login(payload: LoginPayload): Promise<LoginResult> {
     try {
-      const response = await this.httpClient.post<
+      const { data: result } = await this.httpClient.post<
         LoginSuccessResponse,
         LoginPayload
       >("/auth/login", payload);
-      return { accessToken: response.data.data.accessToken };
+      const { accessToken } = result.data;
+      return { accessToken };
     } catch (error) {
       throw AuthServiceError.from(error);
     }
