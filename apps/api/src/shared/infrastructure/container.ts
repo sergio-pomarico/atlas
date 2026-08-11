@@ -1,5 +1,6 @@
 import "reflect-metadata";
 
+import { EmailService } from "@shared/infrastructure/services/email.ts";
 import { Logger as LoggerImpl } from "@shared/infrastructure/services/logger.ts";
 import { Container } from "inversify";
 import type { Logger } from "./services/logger.ts";
@@ -18,10 +19,16 @@ sharedContainer
   .bind<PrismaService>("PrismaService")
   .to(PrismaService)
   .inSingletonScope();
+sharedContainer
+  .bind<EmailService>("EmailService")
+  .to(EmailService)
+  .inSingletonScope();
 
 export const initializeSharedServices = async (): Promise<void> => {
   const prismaService = sharedContainer.get<PrismaService>("PrismaService");
+  const emailService = sharedContainer.get<EmailService>("EmailService");
   await prismaService.init();
+  await emailService.initialize();
 };
 
 export default sharedContainer;

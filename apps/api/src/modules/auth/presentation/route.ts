@@ -1,4 +1,8 @@
 import { loginSchema } from "@atlas/schemas/lib/auth/login.ts";
+import {
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "@atlas/schemas/lib/auth/password-recovery.ts";
 import { schemaValidation } from "@shared/infrastructure/middlewares/validation.ts";
 import { Router } from "express";
 import container from "../infrastructure/container.ts";
@@ -18,6 +22,16 @@ export class AuthRoutes {
       "/login",
       schemaValidation(loginSchema),
       this.controller.login
+    );
+    this.router.post(
+      "/forgot-password",
+      schemaValidation(forgotPasswordSchema),
+      this.controller.forgotPassword
+    );
+    this.router.post(
+      "/reset-password",
+      schemaValidation(resetPasswordSchema),
+      this.controller.resetPassword
     );
   }
 }

@@ -26,7 +26,13 @@ export class Logger {
         level: levels.labels[levels.values.info || 30],
         redact: {
           paths: [
+            "code",
+            "codeHash",
+            "resetRequestId",
             "*.verified",
+            "*.code",
+            "*.codeHash",
+            "*.resetRequestId",
             "*.password",
             "*.verificationCode",
             "*.passwordResetCode",
