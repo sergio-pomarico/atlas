@@ -12,6 +12,7 @@ export class User
   readonly sessionId?: string;
   private _status: UserStatusType;
   private _failedLoginAttempts: number;
+  passwordResetRequestedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 
@@ -24,6 +25,7 @@ export class User
     this.sessionId = props.sessionId;
     this._status = props.status;
     this._failedLoginAttempts = props.failedLoginAttempts;
+    this.passwordResetRequestedAt = props.passwordResetRequestedAt;
     this.createdAt = props.createdAt ?? new Date();
     this.updatedAt = props.updatedAt ?? new Date();
   }
@@ -51,6 +53,11 @@ export class User
     return this._status === UserStatus.BLOCKED;
   }
 
+  //check if the user was deleted by an admin
+  isDeleted(): boolean {
+    return this._status === UserStatus.DELETED;
+  }
+
   //check if the user is verified
   isVerified(): boolean {
     return this._verified;
@@ -66,6 +73,7 @@ export class User
       sessionId: this.sessionId,
       status: this._status,
       failedLoginAttempts: this._failedLoginAttempts,
+      passwordResetRequestedAt: this.passwordResetRequestedAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
