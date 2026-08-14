@@ -1,18 +1,21 @@
 model User {
-  id                  String     @id @default(uuid())
-  email               String     @unique
-  phone               String     @unique
-  verified            Boolean    @default(false) @map("is_verified")
-  status              UserStatus @default(INACTIVE) @map("status")
-  password            String
-  failedLoginAttempts Int        @default(0) @map("failed_login_attempts")
-  createdAt           DateTime   @default(now()) @map("created_at")
-  updatedAt           DateTime   @default(now()) @map("updated_at")
-  session             Session?
+  id                       String                 @id @default(uuid())
+  email                    String                 @unique
+  phone                    String                 @unique
+  verified                 Boolean                @default(false) @map("is_verified")
+  status                   UserStatus             @default(INACTIVE) @map("status")
+  password                 String
+  failedLoginAttempts      Int                    @default(0) @map("failed_login_attempts")
+  passwordResetRequestedAt DateTime?              @map("password_reset_requested_at")
+  createdAt                DateTime               @default(now()) @map("created_at")
+  updatedAt                DateTime               @default(now()) @map("updated_at")
+  session                  Session?
+  passwordResetRequests    PasswordResetRequest[]
 }
 
 enum UserStatus {
   ACTIVE
   INACTIVE
   BLOCKED
+  DELETED
 }
