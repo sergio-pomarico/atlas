@@ -12,7 +12,6 @@ export class User
   readonly sessionId?: string;
   private _status: UserStatusType;
   private _failedLoginAttempts: number;
-  passwordResetRequestedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 
@@ -25,7 +24,6 @@ export class User
     this.sessionId = props.sessionId;
     this._status = props.status;
     this._failedLoginAttempts = props.failedLoginAttempts;
-    this.passwordResetRequestedAt = props.passwordResetRequestedAt;
     this.createdAt = props.createdAt ?? new Date();
     this.updatedAt = props.updatedAt ?? new Date();
   }
@@ -63,6 +61,14 @@ export class User
     return this._verified;
   }
 
+  isEligibleForPasswordRecovery(): boolean {
+    return (
+      this._verified === true &&
+      (this._status === UserStatus.ACTIVE ||
+        this._status === UserStatus.BLOCKED)
+    );
+  }
+
   toObject(): UserEntity {
     return {
       id: this.id,
@@ -73,7 +79,6 @@ export class User
       sessionId: this.sessionId,
       status: this._status,
       failedLoginAttempts: this._failedLoginAttempts,
-      passwordResetRequestedAt: this.passwordResetRequestedAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

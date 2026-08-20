@@ -7,7 +7,6 @@ export interface UserEntity {
   status: UserStatusType;
   readonly failedLoginAttempts: number;
   password: string;
-  passwordResetRequestedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
 }

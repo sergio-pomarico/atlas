@@ -6,7 +6,6 @@ model User {
   status                   UserStatus             @default(INACTIVE) @map("status")
   password                 String
   failedLoginAttempts      Int                    @default(0) @map("failed_login_attempts")
-  passwordResetRequestedAt DateTime?              @map("password_reset_requested_at")
   createdAt                DateTime               @default(now()) @map("created_at")
   updatedAt                DateTime               @default(now()) @map("updated_at")
   session                  Session?

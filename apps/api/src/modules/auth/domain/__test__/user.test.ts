@@ -94,5 +94,27 @@ describe("User Domain Entity", () => {
 
       expect(unverifiedUser.isVerified()).toBe(false);
     });
+
+    it("allows password recovery only for verified active or blocked users", () => {
+      expect(new User(mockUserData).isEligibleForPasswordRecovery()).toBe(true);
+      expect(
+        new User({
+          ...mockUserData,
+          status: UserStatus.BLOCKED,
+        }).isEligibleForPasswordRecovery()
+      ).toBe(true);
+      expect(
+        new User({
+          ...mockUserData,
+          status: UserStatus.INACTIVE,
+        }).isEligibleForPasswordRecovery()
+      ).toBe(false);
+      expect(
+        new User({
+          ...mockUserData,
+          verified: false,
+        }).isEligibleForPasswordRecovery()
+      ).toBe(false);
+    });
   });
 });
