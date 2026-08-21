@@ -3,10 +3,7 @@ import {
   startRedisTestService,
 } from "@helpers/test/redis.ts";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
-import {
-  RedisService,
-  RedisServiceError,
-} from "@shared/infrastructure/services/redis.ts";
+import { RedisServiceError } from "@shared/infrastructure/services/redis.ts";
 
 interface CachedUser {
   id: string;
@@ -78,12 +75,6 @@ describe("RedisService integration", () => {
     await expect(
       redis.redisService.delete("redis-service:missing")
     ).resolves.toBe(false);
-  });
-
-  it("throws a RedisServiceError when initialized with a different URL", () => {
-    expect(() => RedisService.getInstance("redis://localhost:6380")).toThrow(
-      RedisServiceError
-    );
   });
 
   it("throws when reading a non JSON value as JSON", async () => {

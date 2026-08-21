@@ -1,4 +1,5 @@
 import { RedisService } from "@shared/infrastructure/services/redis.ts";
+import type { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import { GenericContainer, type StartedTestContainer } from "testcontainers";
 
 export interface StartedRedisTestService {
@@ -15,8 +16,11 @@ export async function startRedisTestService(): Promise<StartedRedisTestService> 
   const redisUrl = `redis://${container.getHost()}:${container.getMappedPort(
     6379
   )}`;
-  const redisService = RedisService.getInstance(redisUrl);
-  await redisService.connect();
+  const secretManager = {
+    getSecret: async () => ({ secretValue: redisUrl }),
+  } as unknown as SecretManagerService;
+  const redisService = new RedisService(secretManager);
+  await redisService.initialize();
 
   return {
     redisUrl,

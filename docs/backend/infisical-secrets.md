@@ -30,10 +30,10 @@ import { SecretMangerService } from "@shared/infrastructure/services/secret-mana
 
 async function doSomethingWithSecret() {
   const secretService = SecretMangerService.getInstance();
-  
+
   // Obtiene el secreto desde Infisical
   const apiKeySecret = await secretService.getSecret("API_KEY");
-  
+
   // El valor del secreto se encuentra en la propiedad secretValue
   console.log("Mi API Key es:", apiKeySecret.secretValue);
 }
@@ -45,9 +45,10 @@ async function doSomethingWithSecret() {
 
 ## 🗄️ Prisma y Base de Datos (`DATABASE_URL`)
 
-Por motivos de seguridad, la URL de la base de datos no se almacena en el archivo `.env` local, sino que se inyecta dinámicamente desde Infisical antes de ejecutar los comandos de Prisma. 
+Por motivos de seguridad, la URL de la base de datos no se almacena en el archivo `.env` local, sino que se inyecta dinámicamente desde Infisical antes de ejecutar los comandos de Prisma.
 
 Para lograr esto, existe un script especializado (`apps/api/helpers/scripts/migrate.ts`) que envuelve la ejecución de los comandos de Prisma:
+
 1. Autentica con Infisical.
 2. Obtiene el secreto `DATABASE_URL`.
 3. Lo inyecta de forma temporal en las variables de entorno (`process.env.DATABASE_URL`).
@@ -55,21 +56,24 @@ Para lograr esto, existe un script especializado (`apps/api/helpers/scripts/migr
 
 ### Comandos Disponibles
 
-En el `package.json` existen scripts definidos para facilitar esta tarea. Para interactuar con la base de datos debes utilizar siempre estos scripts en lugar de ejecutar los comandos directos de `prisma`. 
+En el `package.json` existen scripts definidos para facilitar esta tarea. Para interactuar con la base de datos debes utilizar siempre estos scripts en lugar de ejecutar los comandos directos de `prisma`.
 
 Desde la raíz del repositorio, puedes ejecutar:
 
 - **Generar y aplicar migraciones en desarrollo:**
+
   ```bash
   pnpm --filter @atlas/api db:migrate
   ```
 
 - **Aplicar migraciones en producción:**
+
   ```bash
   pnpm --filter @atlas/api db:migrate:deploy
   ```
 
 - **Hacer un push rápido a la BD (solo en desarrollo):**
+
   ```bash
   pnpm --filter @atlas/api db:push
   ```
@@ -82,3 +86,12 @@ Desde la raíz del repositorio, puedes ejecutar:
 ### Seguridad en los Scripts
 
 El script contenedor (`migrate.ts`) implementa una lista blanca de comandos permitidos y prohíbe explícitamente comandos destructivos en entornos de producción (como `db push`). Además, bloquea de forma predeterminada el comando `migrate reset` para evitar pérdidas de datos accidentales, el cual solo debe ejecutarse intencionadamente sin el uso de este contenedor.
+
+---
+
+## Redis y correo
+
+La API obtiene estos secretos al inicializar los servicios compartidos, antes de abrir el servidor:
+
+- `UPSTASH_REDIS_URL`: URL TLS de Upstash con esquema `rediss://`.
+- `RESEND_API_KEY`: clave de API de Resend.

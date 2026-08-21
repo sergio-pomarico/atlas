@@ -1,4 +1,6 @@
+import { inject, injectable } from "inversify";
 import { createClient, type RedisClientType } from "redis";
+import type { SecretManagerService } from "./secret-manager.ts";
 
 type RedisValue = string | boolean | number;
 
@@ -11,35 +13,34 @@ export class RedisServiceError extends Error {
   }
 }
 
+@injectable()
 export class RedisService {
-  private static instance: RedisService;
-  private readonly client: RedisClientType;
-  private readonly url: string;
+  private client: RedisClientType | null = null;
+  private readonly secretManager: SecretManagerService;
 
-  private constructor(url: string) {
-    this.url = url;
-    this.client = createClient({ url });
+  constructor(
+    @inject("SecretManagerService") secretManager: SecretManagerService
+  ) {
+    this.secretManager = secretManager;
   }
 
-  static getInstance(url: string): RedisService {
-    if (!RedisService.instance) {
-      RedisService.instance = new RedisService(url);
+  async initialize(): Promise<void> {
+    if (this.client) {
+      return;
     }
 
-    if (RedisService.instance.url !== url) {
-      throw new RedisServiceError(
-        "RedisService already initialized with a different URL."
-      );
-    }
-
-    return RedisService.instance;
+    const redisUrl = await this.secretManager.getSecret("UPSTASH_REDIS_URL");
+    this.client = createClient({ url: redisUrl.secretValue });
+    await this.connect();
   }
 
   async connect(): Promise<void> {
-    if (this.client.isOpen) {
+    const client = this.getClient();
+
+    if (client.isOpen) {
       return;
     }
-    await this.client.connect();
+    await client.connect();
   }
 
   async set(
@@ -47,11 +48,11 @@ export class RedisService {
     value: RedisValue,
     ttlSeconds = DEFAULT_TTL_SECONDS
   ): Promise<void> {
-    await this.client.set(key, String(value), { EX: ttlSeconds });
+    await this.getClient().set(key, String(value), { EX: ttlSeconds });
   }
 
   async get(key: string): Promise<string | null> {
-    return await this.client.get(key);
+    return await this.getClient().get(key);
   }
 
   async setJson<T extends object>(
@@ -59,7 +60,7 @@ export class RedisService {
     value: T,
     ttlSeconds = DEFAULT_TTL_SECONDS
   ): Promise<void> {
-    await this.client.set(key, JSON.stringify(value), { EX: ttlSeconds });
+    await this.getClient().set(key, JSON.stringify(value), { EX: ttlSeconds });
   }
 
   async getJson<T>(key: string): Promise<T | null> {
@@ -79,15 +80,36 @@ export class RedisService {
   }
 
   async delete(key: string): Promise<boolean> {
-    const deletedKeys = await this.client.del(key);
+    const deletedKeys = await this.getClient().del(key);
     return deletedKeys === 1;
   }
 
+  async evaluate(
+    script: string,
+    keys: string[],
+    arguments_: string[]
+  ): Promise<unknown> {
+    return await this.getClient().eval(script, {
+      keys,
+      arguments: arguments_,
+    });
+  }
+
   async disconnect(): Promise<void> {
-    if (!this.client.isOpen) {
+    if (!this.client?.isOpen) {
       return;
     }
 
     await this.client.quit();
+  }
+
+  private getClient(): RedisClientType {
+    if (!this.client) {
+      throw new RedisServiceError(
+        "RedisService has not been initialized. Call initialize() before use."
+      );
+    }
+
+    return this.client;
   }
 }

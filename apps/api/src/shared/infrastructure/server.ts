@@ -38,8 +38,18 @@ export class Server {
     });
   }
 
-  // fallow-ignore-next-line unused-class-member
-  stop() {
-    this.listener?.close();
+  stop(): Promise<void> {
+    if (!this.listener) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve, reject) => {
+      this.listener?.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
   }
 }

@@ -17,6 +17,7 @@ import type { Resend as ResendType } from "resend";
 const mockedResend = jest.fn();
 interface SendResponse {
   data: { id: string } | null;
+  error?: { message: string; name: string } | null;
 }
 
 const createSendMock = (response: SendResponse) =>
@@ -134,6 +135,37 @@ describe("EmailService", () => {
     const { emailService } = await createEmailService({ data: null });
 
     await expect(emailService.send(baseMailOptions)).resolves.toBe(false);
+  });
+
+  it("reports a provider rejection without treating it as accepted delivery", async () => {
+    const { emailService } = await createEmailService({
+      data: null,
+      error: { message: "Rejected", name: "validation_error" },
+    });
+
+    await expect(emailService.sendWithResult(baseMailOptions)).resolves.toEqual(
+      {
+        accepted: false,
+      }
+    );
+  });
+
+  it("rejects when delivery exceeds the injected test timeout", async () => {
+    const send = jest.fn<(payload: unknown) => Promise<SendResponse>>(
+      () =>
+        new Promise<SendResponse>(() => {
+          // Intentionally pending to exercise the timeout.
+        })
+    );
+    mockedResend.mockImplementation(
+      () => ({ emails: { send } }) as unknown as ResendType
+    );
+    const emailService = new EmailService(secretManager, 1);
+    await emailService.initialize();
+
+    await expect(emailService.sendWithResult(baseMailOptions)).rejects.toThrow(
+      "Email delivery timed out."
+    );
   });
 
   it("propagates errors from Resend", async () => {
