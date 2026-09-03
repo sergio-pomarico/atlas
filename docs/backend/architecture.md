@@ -98,6 +98,20 @@ graph TD
 - La capa de dominio es independiente de frameworks
 - Las dependencias apuntan hacia el centro (dominio)
 
+### Ubicacion De Responsabilidades
+
+- `application/` contiene casos de uso y orquestacion. Coordina puertos o repositorios, incluso cuando un scheduler o worker lo invoca.
+- `infrastructure/services/` contiene adaptadores de dependencias externas o del runtime: Redis, Prisma, proveedores HTTP, correo, `node:crypto`, secretos, archivos o colas.
+- No crear clases de infraestructura que solo deleguen una llamada a un repositorio o puerto. Si no encapsula una dependencia externa ni agrega comportamiento de infraestructura, debe ser un caso de uso en `application/` o no existir todavia.
+- Un scheduler futuro debe invocar un caso de uso de `application/`; no debe convertir ese caso de uso en un servicio de infraestructura.
+
+**Ejemplos:**
+
+- Correcto: `RedisPasswordRecoveryRateLimiter` en infraestructura, porque ejecuta Lua mediante Redis.
+- Correcto: un generador de codigos basado en `node:crypto` en infraestructura.
+- Incorrecto: `PasswordRecoveryPendingCleanup` en infraestructura si solo llama `repository.cleanupAbandonedPendingRequests()`.
+- Correcto para el ultimo caso: `application/cleanup-password-recovery-pending.ts`, cuando exista un scheduler que lo invoque.
+
 ## Shared Kernel
 
 El código compartido entre módulos se organiza en `src/shared/`:

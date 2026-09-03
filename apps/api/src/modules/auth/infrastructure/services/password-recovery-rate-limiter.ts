@@ -26,7 +26,7 @@ if emailCreated then
   return {1, 0, 0}
 end
 
-return {0, 0, redis.call('PTTL', KEYS[2])
+return {0, 0, redis.call('PTTL', KEYS[2])}
 `;
 
 @injectable()

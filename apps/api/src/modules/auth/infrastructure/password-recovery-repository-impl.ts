@@ -2,6 +2,7 @@ import type {
   ActivatePasswordResetRequestResult,
   CleanupPendingPasswordResetRequestsResult,
   CreatePendingPasswordResetRequestResult,
+  InvalidatePendingPasswordResetRequestResult,
   PasswordRecoveryRepository,
 } from "@modules/auth/domain/password-recovery-repository.ts";
 import type { PrismaService } from "@shared/infrastructure/services/prisma.ts";
@@ -142,6 +143,48 @@ export class PrismaPasswordRecoveryRepository
       if (error instanceof RequestNotActivatableError) {
         return { type: "requestNotActivatable" };
       }
+      return { type: "infrastructureError" };
+    }
+  }
+
+  async invalidatePendingRequest(
+    requestId: string,
+    now: Date
+  ): Promise<InvalidatePendingPasswordResetRequestResult> {
+    try {
+      return await this.prismaService.getClient().$transaction(async (tx) => {
+        const users = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`
+          SELECT "id"
+          FROM "User"
+          WHERE "id" = (
+            SELECT "user_id" FROM "PasswordResetRequest" WHERE "id" = ${requestId}
+          )
+          FOR UPDATE
+        `);
+        const user = users[0];
+        if (!user) {
+          return { type: "requestNotInvalidatable" };
+        }
+
+        const requests = await tx.$queryRaw<{ status: string }[]>(Prisma.sql`
+          SELECT "status"
+          FROM "PasswordResetRequest"
+          WHERE "id" = ${requestId} AND "user_id" = ${user.id}
+          FOR UPDATE
+        `);
+        if (requests[0]?.status !== "PENDING") {
+          return { type: "requestNotInvalidatable" };
+        }
+
+        const invalidated = await tx.passwordResetRequest.updateMany({
+          where: { id: requestId, userId: user.id, status: "PENDING" },
+          data: { status: "INVALIDATED", invalidatedAt: now },
+        });
+        return invalidated.count === 1
+          ? { type: "invalidated" }
+          : { type: "requestNotInvalidatable" };
+      });
+    } catch {
       return { type: "infrastructureError" };
     }
   }

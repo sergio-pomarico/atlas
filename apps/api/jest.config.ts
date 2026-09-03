@@ -96,6 +96,7 @@ const config: Config = {
     "^@helpers/(.*)$": "<rootDir>/helpers/$1",
     "^@modules/(.*)$": "<rootDir>/src/modules/$1",
     "^@shared/(.*)$": "<rootDir>/src/shared/$1",
+    "^generated/(.*)$": "<rootDir>/generated/$1",
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

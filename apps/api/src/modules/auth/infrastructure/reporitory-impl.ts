@@ -58,15 +58,15 @@ export class AuthRepositoryImpl implements AuthRepository {
     email: string
   ): Promise<Result<User, AuthenticationError>> => {
     const result = await tryCatch<UserEntity | null, PrismaError>(
-      this.prismaService.getClient().user.findUniqueOrThrow({
+      this.prismaService.getClient().user.findUnique({
         where: { email },
       }) as Promise<UserEntity | null>
     );
     if (!result.isSuccess) {
       return Result.fail(
-        AuthenticationError.userNotFound(
-          "Invalid credentials",
-          "The provided email or password is incorrect"
+        AuthenticationError.internalServerError(
+          "User not found",
+          "An error occurred while looking up the user"
         )
       );
     }
