@@ -9,7 +9,6 @@ export class User
   readonly phone: string;
   readonly password: string;
   private readonly _verified: boolean;
-  readonly sessionId?: string;
   private _status: UserStatusType;
   private _failedLoginAttempts: number;
   createdAt?: Date;
@@ -21,7 +20,6 @@ export class User
     this.phone = props.phone;
     this.password = props.password;
     this._verified = props.verified ?? false;
-    this.sessionId = props.sessionId;
     this._status = props.status;
     this._failedLoginAttempts = props.failedLoginAttempts;
     this.createdAt = props.createdAt ?? new Date();
@@ -51,6 +49,10 @@ export class User
     return this._status === UserStatus.BLOCKED;
   }
 
+  isActive(): boolean {
+    return this._status === UserStatus.ACTIVE;
+  }
+
   //check if the user is verified
   isVerified(): boolean {
     return this._verified;
@@ -63,7 +65,6 @@ export class User
       phone: this.phone,
       password: this.password,
       verified: this._verified,
-      sessionId: this.sessionId,
       status: this._status,
       failedLoginAttempts: this._failedLoginAttempts,
       createdAt: this.createdAt,

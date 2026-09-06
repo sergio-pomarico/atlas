@@ -24,6 +24,7 @@ describe("User Domain Entity", () => {
       expect(user.email).toBe(mockUserData.email);
       expect(user.phone).toBe(mockUserData.phone);
       expect(user.isVerified()).toBe(true);
+      expect(user.isActive()).toBe(true);
       expect(user.isBlocked()).toBe(false);
     });
 
@@ -84,6 +85,7 @@ describe("User Domain Entity", () => {
       });
 
       expect(blockedUser.isBlocked()).toBe(true);
+      expect(blockedUser.isActive()).toBe(false);
     });
 
     it("should correctly identify unverified users", () => {

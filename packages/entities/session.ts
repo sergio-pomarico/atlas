@@ -1,10 +1,10 @@
 export interface SessionEntity {
   readonly id: string;
   userId: string;
-  active: boolean;
-  lastLogin?: Date;
-  lastLoginIp?: string;
-  userAgent?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  ipAddress: string;
+  userAgent: string | null;
+  expiresAt: Date;
+  revokedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
