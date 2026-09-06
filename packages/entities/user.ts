@@ -3,7 +3,6 @@ export interface UserEntity {
   email: string;
   phone: string;
   verified?: boolean;
-  readonly sessionId?: string;
   status: UserStatusType;
   readonly failedLoginAttempts: number;
   password: string;
