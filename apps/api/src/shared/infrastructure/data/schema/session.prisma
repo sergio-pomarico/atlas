@@ -1,12 +1,15 @@
 model Session {
-  id          String   @id @default(uuid())
-  userId      String   @unique @map("user_id")
-  active      Boolean  @default(false)
-  lastLogin   DateTime @default(now()) @map("last_login")
-  lastLoginIp String?  @map("last_login_ip")
-  userAgent   String?  @map("user_agent")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @map("updated_at")
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  ipAddress String    @map("ip_address") @db.VarChar(45)
+  userAgent String?   @map("user_agent") @db.VarChar(512)
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@unique([userId], map: "Session_open_user_id_key", where: raw("\"revoked_at\" IS NULL"))
 }
