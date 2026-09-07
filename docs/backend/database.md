@@ -44,16 +44,16 @@ erDiagram
 
     Session {
         String   id              PK  "UUID autogenerado"
-        String   user_id         FK  "Único, referencia a User"
-        Boolean  active              "Default: false"
-        DateTime last_login          "Default: now()"
-        String   last_login_ip       "Opcional"
+        String   user_id         FK  "Referencia a User"
+        String   ip_address          "IP de conexión directa"
         String   user_agent          "Opcional"
+        DateTime expires_at          "Expiración de sesión"
+        DateTime revoked_at          "Opcional"
         DateTime created_at          "Default: now()"
-        DateTime updated_at          "Default: now()"
+        DateTime updated_at          "Actualización automática"
     }
 
-    User ||--o| Session : "1 : 1"
+    User ||--o{ Session : "1 : N histórica"
 ```
 
 ---
@@ -78,28 +78,37 @@ Representa a un usuario registrado en el sistema. Almacena credenciales de acces
 
 **Relaciones:**
 
-- `session` → `Session` (1 a 0..1): Un usuario puede tener una sesión activa.
+- `sessions` → `Session` (1 a N): Un usuario conserva el historial de sesiones; como máximo una puede permanecer abierta.
 
 ---
 
 ### `Session`
 
-Almacena la sesión de autenticación de un usuario. Registra información de seguridad como IP y user agent del último acceso.
+Almacena el historial de sesiones de autenticación. Cada login exitoso crea una fila nueva y revoca cualquier fila abierta anterior del mismo usuario.
 
-| Columna         | Tipo            | Restricciones          | Default  | Descripción                               |
-| --------------- | --------------- | ---------------------- | -------- | ----------------------------------------- |
-| `id`            | `String (UUID)` | `PK`                   | `uuid()` | Identificador único de la sesión          |
-| `user_id`       | `String`        | `FK, UNIQUE, NOT NULL` | —        | Referencia al usuario dueño de la sesión  |
-| `active`        | `Boolean`       | `NOT NULL`             | `false`  | Indica si la sesión está activa           |
-| `last_login`    | `DateTime`      | `NOT NULL`             | `now()`  | Fecha y hora del último inicio de sesión  |
-| `last_login_ip` | `String`        | `NULLABLE`             | `NULL`   | Dirección IP del último login             |
-| `user_agent`    | `String`        | `NULLABLE`             | `NULL`   | User agent del cliente en el último login |
-| `created_at`    | `DateTime`      | `NOT NULL`             | `now()`  | Fecha de creación del registro            |
-| `updated_at`    | `DateTime`      | `NOT NULL`             | `now()`  | Fecha de última actualización             |
+| Columna      | Tipo            | Restricciones         | Default  | Descripción                                      |
+| ------------ | --------------- | --------------------- | -------- | ------------------------------------------------ |
+| `id`         | `String (UUID)` | `PK`                  | `uuid()` | Identificador único de la sesión                 |
+| `user_id`    | `String`        | `FK, NOT NULL`        | —        | Referencia al usuario dueño de la sesión         |
+| `ip_address` | `VarChar(45)`   | `NOT NULL`            | —        | IP de la conexión directa que inició la sesión   |
+| `user_agent` | `VarChar(512)`  | `NULLABLE`            | `NULL`   | User-agent normalizado y truncado, no autoritativo |
+| `expires_at` | `DateTime`      | `NOT NULL`            | —        | Momento en que deja de estar vigente             |
+| `revoked_at` | `DateTime`      | `NULLABLE`            | `NULL`   | Momento de revocación; `NULL` significa abierta  |
+| `created_at` | `DateTime`      | `NOT NULL`            | `now()`  | Inicio de la sesión                              |
+| `updated_at` | `DateTime`      | `NOT NULL, @updatedAt` | —        | Fecha de última actualización                    |
 
 **Relaciones:**
 
 - `user` → `User` (N a 1): Cada sesión pertenece a exactamente un usuario.
+- La FK usa `ON DELETE RESTRICT` para impedir borrar un usuario con historial de sesiones.
+
+Una sesión está **abierta** cuando `revoked_at IS NULL`. Está **vigente** cuando además `expires_at > now()`. Un índice único parcial sobre `user_id WHERE revoked_at IS NULL` impide más de una sesión abierta por usuario; el repositorio también serializa los reemplazos mediante un lock de fila del usuario.
+
+Las sesiones revocadas y sus metadatos de IP y user-agent se retienen indefinidamente. La API no habilita `trust proxy`: obtiene la IP desde `req.ip` para la conexión directa y no confía en `X-Forwarded-For`.
+
+### Configuración de sesiones
+
+`SESSION_TTL_DAYS` es una variable de entorno no secreta que define la expiración de nuevas sesiones. Si no existe usa `30`; solo acepta enteros entre `1` y `90`, inclusive. Un valor vacío o inválido impide iniciar la aplicación explícitamente.
 
 ---
 
