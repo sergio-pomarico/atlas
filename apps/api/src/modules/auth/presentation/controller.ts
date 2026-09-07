@@ -20,7 +20,13 @@ export class AuthController {
     res: Response<ApiSuccessResponse<LoginResult>>,
     next: NextFunction
   ) => {
-    const result = await this.loginUserUseCase.run(req.body);
+    const userAgent = req.get("user-agent")?.trim();
+    const result = await this.loginUserUseCase.run({
+      email: req.body.email,
+      password: req.body.password,
+      ipAddress: req.ip ?? "unknown",
+      userAgent: userAgent ? userAgent.slice(0, 512) : null,
+    });
     if (!result.isSuccess) {
       next(result.getError());
       return;
