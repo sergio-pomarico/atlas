@@ -22,7 +22,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     const result = await tryCatch<UserEntity | null, AuthenticationError>(
       this.prismaService.getClient().user.findUnique({
         where: { id: userId },
-      }) as Promise<UserEntity | null>
+      })
     );
     if (!result.isSuccess) {
       return Result.fail(result.getError());
@@ -41,8 +41,11 @@ export class AuthRepositoryImpl implements AuthRepository {
     const updateResult = await tryCatch<UserEntity, PrismaError>(
       this.prismaService.getClient().user.update({
         where: { id: userId },
-        data: user.toObject(),
-      }) as Promise<UserEntity>
+        data: {
+          failedLoginAttempts: user.toObject().failedLoginAttempts,
+          status: user.toObject().status,
+        },
+      })
     );
     if (!updateResult.isSuccess) {
       return Result.fail(
@@ -60,7 +63,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     const result = await tryCatch<UserEntity | null, PrismaError>(
       this.prismaService.getClient().user.findUniqueOrThrow({
         where: { email },
-      }) as Promise<UserEntity | null>
+      })
     );
     if (!result.isSuccess) {
       return Result.fail(
@@ -89,7 +92,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     const result = await tryCatch<UserEntity | null, AuthenticationError>(
       this.prismaService.getClient().user.findUnique({
         where: { id: userId },
-      }) as Promise<UserEntity | null>
+      })
     );
     if (!result.isSuccess) {
       return Result.fail(result.getError());
@@ -108,8 +111,10 @@ export class AuthRepositoryImpl implements AuthRepository {
     const updateResult = await tryCatch<UserEntity, PrismaError>(
       this.prismaService.getClient().user.update({
         where: { id: userId },
-        data: user.toObject(),
-      }) as Promise<UserEntity>
+        data: {
+          failedLoginAttempts: user.toObject().failedLoginAttempts,
+        },
+      })
     );
     if (!updateResult.isSuccess) {
       return Result.fail(
