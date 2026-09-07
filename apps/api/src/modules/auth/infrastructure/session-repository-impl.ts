@@ -1,4 +1,3 @@
-import { UserStatus, type UserStatusType } from "@atlas/entities/user.ts";
 import AuthenticationError from "@modules/auth/domain/error.ts";
 import type {
   CreateSessionInput,
@@ -14,8 +13,7 @@ class SessionUserNotEligibleError extends Error {}
 
 interface LockedUserRow {
   id: string;
-  status: UserStatusType;
-  verified: boolean;
+  eligible: boolean;
 }
 
 interface EffectiveTimeRow {
@@ -23,6 +21,46 @@ interface EffectiveTimeRow {
 }
 
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+function isSessionTtlValid(sessionTtlDays: number): boolean {
+  return (
+    Number.isInteger(sessionTtlDays) &&
+    sessionTtlDays >= 1 &&
+    sessionTtlDays <= 90
+  );
+}
+
+function assertSessionUserIsEligible(users: LockedUserRow[]): void {
+  const [user] = users;
+  if (!user) {
+    throw new SessionUserNotFoundError();
+  }
+
+  if (!user.eligible) {
+    throw new SessionUserNotEligibleError();
+  }
+}
+
+function mapSessionError(error: Error): AuthenticationError {
+  if (error instanceof SessionUserNotFoundError) {
+    return AuthenticationError.userNotFound(
+      "User not found",
+      "The user with the provided ID does not exist"
+    );
+  }
+
+  if (error instanceof SessionUserNotEligibleError) {
+    return AuthenticationError.userNotVerifiedOrBlocked(
+      "Invalid credentials",
+      "The provided credentials cannot be used to start a session"
+    );
+  }
+
+  return AuthenticationError.internalServerError(
+    "Session replacement failed",
+    "An error occurred while replacing the active session"
+  );
+}
 
 @injectable()
 export class SessionRepositoryImpl implements SessionRepository {
@@ -35,11 +73,7 @@ export class SessionRepositoryImpl implements SessionRepository {
   replaceActiveSession = async (
     input: CreateSessionInput
   ): Promise<Result<void, AuthenticationError>> => {
-    if (
-      !Number.isInteger(input.sessionTtlDays) ||
-      input.sessionTtlDays < 1 ||
-      input.sessionTtlDays > 90
-    ) {
+    if (!isSessionTtlValid(input.sessionTtlDays)) {
       return Result.fail(
         AuthenticationError.internalServerError(
           "Session configuration invalid",
@@ -53,21 +87,13 @@ export class SessionRepositoryImpl implements SessionRepository {
         const users = await transaction.$queryRaw<LockedUserRow[]>`
           SELECT
             "id",
-            "status",
-            "is_verified" AS "verified"
+            ("status" = 'ACTIVE' AND "is_verified") AS "eligible"
           FROM "User"
           WHERE "id" = ${input.userId}
           FOR UPDATE
         `;
 
-        if (users.length === 0) {
-          throw new SessionUserNotFoundError();
-        }
-
-        const [user] = users;
-        if (!(user?.status === UserStatus.ACTIVE && user.verified)) {
-          throw new SessionUserNotEligibleError();
-        }
+        assertSessionUserIsEligible(users);
 
         const [time] = await transaction.$queryRaw<EffectiveTimeRow[]>`
           SELECT clock_timestamp() AS "effectiveNow"
@@ -96,33 +122,8 @@ export class SessionRepositoryImpl implements SessionRepository {
       })
     );
 
-    if (result.isSuccess) {
-      return Result.success(undefined);
-    }
-
-    if (result.getError() instanceof SessionUserNotFoundError) {
-      return Result.fail(
-        AuthenticationError.userNotFound(
-          "User not found",
-          "The user with the provided ID does not exist"
-        )
-      );
-    }
-
-    if (result.getError() instanceof SessionUserNotEligibleError) {
-      return Result.fail(
-        AuthenticationError.userNotVerifiedOrBlocked(
-          "Invalid credentials",
-          "The provided credentials cannot be used to start a session"
-        )
-      );
-    }
-
-    return Result.fail(
-      AuthenticationError.internalServerError(
-        "Session replacement failed",
-        "An error occurred while replacing the active session"
-      )
-    );
+    return result.isSuccess
+      ? Result.success(undefined)
+      : Result.fail(mapSessionError(result.getError()));
   };
 }
