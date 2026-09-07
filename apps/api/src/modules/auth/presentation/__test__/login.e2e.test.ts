@@ -35,6 +35,7 @@ const mockJWTService = {
   sign: jest.fn<JWTService["sign"]>(),
   verify: jest.fn<JWTService["verify"]>(),
 };
+const loopbackAddressPattern = /127\.0\.0\.1/;
 
 describe("POST /api/auth/login e2e", () => {
   let postgres: StartedPostgresTestDatabase;
@@ -75,19 +76,27 @@ describe("POST /api/auth/login e2e", () => {
   }, 60_000);
 
   it("logs in an active verified user", async () => {
-    await createUser({
+    const beforeLogin = new Date();
+    const user = await createUser({
       email: "active@example.com",
       password: "Password123!",
       failedLoginAttempts: 3,
     });
 
-    const response = await request(app).post("/api/auth/login").send({
-      email: "active@example.com",
-      password: "Password123!",
-    });
+    const response = await request(app)
+      .post("/api/auth/login")
+      .set("User-Agent", "Atlas e2e client")
+      .send({
+        email: "active@example.com",
+        password: "Password123!",
+      });
     const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
       where: { email: "active@example.com" },
     });
+    const sessions = await postgres.prisma.session.findMany({
+      where: { userId: user.id },
+    });
+    const afterLogin = new Date();
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -107,6 +116,129 @@ describe("POST /api/auth/login e2e", () => {
       { expiresIn: "5m" }
     );
     expect(updatedUser.failedLoginAttempts).toBe(0);
+    expect(sessions).toHaveLength(1);
+    expect(sessions[0]?.revokedAt).toBeNull();
+    expect(sessions[0]?.ipAddress).toMatch(loopbackAddressPattern);
+    expect(sessions[0]?.userAgent).toBe("Atlas e2e client");
+    expect(sessions[0]?.expiresAt.getTime()).toBeGreaterThanOrEqual(
+      beforeLogin.getTime() + 30 * 24 * 60 * 60 * 1000
+    );
+    expect(sessions[0]?.expiresAt.getTime()).toBeLessThanOrEqual(
+      afterLogin.getTime() + 30 * 24 * 60 * 60 * 1000
+    );
+  });
+
+  it("revokes the first session on a second successful login", async () => {
+    const user = await createUser({
+      email: "twice@example.com",
+      password: "Password123!",
+    });
+
+    await request(app).post("/api/auth/login").send({
+      email: "twice@example.com",
+      password: "Password123!",
+    });
+    await request(app).post("/api/auth/login").send({
+      email: "twice@example.com",
+      password: "Password123!",
+    });
+    const sessions = await postgres.prisma.session.findMany({
+      where: { userId: user.id },
+    });
+
+    expect(sessions).toHaveLength(2);
+    expect(
+      sessions.filter((session) => session.revokedAt === null)
+    ).toHaveLength(1);
+  });
+
+  it("ignores X-Forwarded-For and stores the direct connection IP", async () => {
+    const user = await createUser({
+      email: "forwarded@example.com",
+      password: "Password123!",
+    });
+
+    await request(app)
+      .post("/api/auth/login")
+      .set("X-Forwarded-For", "203.0.113.99")
+      .send({
+        email: "forwarded@example.com",
+        password: "Password123!",
+      });
+    const session = await postgres.prisma.session.findFirstOrThrow({
+      where: { userId: user.id },
+    });
+
+    expect(session.ipAddress).not.toBe("203.0.113.99");
+    expect(session.ipAddress).toMatch(loopbackAddressPattern);
+  });
+
+  it("truncates a hostile user-agent to the database limit", async () => {
+    const user = await createUser({
+      email: "agent@example.com",
+      password: "Password123!",
+    });
+
+    const response = await request(app)
+      .post("/api/auth/login")
+      .set("User-Agent", `  ${"x".repeat(700)}  `)
+      .send({
+        email: "agent@example.com",
+        password: "Password123!",
+      });
+    const session = await postgres.prisma.session.findFirstOrThrow({
+      where: { userId: user.id },
+    });
+
+    expect(response.status).toBe(200);
+    expect(session.userAgent).toBe("x".repeat(512));
+  });
+
+  it.each([
+    ["rejects", new Error("JWT failed")],
+    ["returns null", null],
+  ])(
+    "does not create a session when JWT signing %s",
+    async (_label, failure) => {
+      const user = await createUser({
+        email: "jwt-failure@example.com",
+        password: "Password123!",
+        failedLoginAttempts: 3,
+      });
+      if (failure instanceof Error) {
+        mockJWTService.sign.mockRejectedValue(failure);
+      } else {
+        mockJWTService.sign.mockResolvedValue(failure);
+      }
+
+      const response = await request(app).post("/api/auth/login").send({
+        email: "jwt-failure@example.com",
+        password: "Password123!",
+      });
+      const updatedUser = await postgres.prisma.user.findUniqueOrThrow({
+        where: { id: user.id },
+      });
+
+      expect(response.status).toBe(500);
+      expect(updatedUser.failedLoginAttempts).toBe(0);
+      expect(await postgres.prisma.session.count()).toBe(0);
+    }
+  );
+
+  it("rejects an inactive user without creating a session", async () => {
+    await createUser({
+      email: "inactive@example.com",
+      password: "Password123!",
+      status: UserStatus.INACTIVE,
+    });
+
+    const response = await request(app).post("/api/auth/login").send({
+      email: "inactive@example.com",
+      password: "Password123!",
+    });
+
+    expect(response.status).toBe(403);
+    expect(await postgres.prisma.session.count()).toBe(0);
   });
 
   it("returns not found when the user does not exist", async () => {
