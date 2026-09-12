@@ -24,5 +24,7 @@
     "external_directory": "deny",
     "webfetch": "ask",
     "websearch": "ask"
-  }
+  },
+  "default_agent": "orchestrator",
+  "subagent_depth": 1
 }
