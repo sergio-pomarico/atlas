@@ -1,4 +1,4 @@
-import AuthenticationError from "@modules/auth/domain/error.ts";
+import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type {
   CreateSessionInput,
   SessionRepository,
@@ -43,23 +43,14 @@ function assertSessionUserIsEligible(users: LockedUserRow[]): void {
 
 function mapSessionError(error: Error): AuthenticationError {
   if (error instanceof SessionUserNotFoundError) {
-    return AuthenticationError.userNotFound(
-      "User not found",
-      "The user with the provided ID does not exist"
-    );
+    return AuthenticationError.userNotFound();
   }
 
   if (error instanceof SessionUserNotEligibleError) {
-    return AuthenticationError.userNotVerifiedOrBlocked(
-      "Invalid credentials",
-      "The provided credentials cannot be used to start a session"
-    );
+    return AuthenticationError.sessionUserNotEligible();
   }
 
-  return AuthenticationError.internalServerError(
-    "Session replacement failed",
-    "An error occurred while replacing the active session"
-  );
+  return AuthenticationError.sessionReplacementFailed();
 }
 
 @injectable()
@@ -75,10 +66,7 @@ export class SessionRepositoryImpl implements SessionRepository {
   ): Promise<Result<void, AuthenticationError>> => {
     if (!isSessionTtlValid(input.sessionTtlDays)) {
       return Result.fail(
-        AuthenticationError.internalServerError(
-          "Session configuration invalid",
-          "The session lifetime configuration is invalid"
-        )
+        AuthenticationError.sessionLifetimeConfigurationInvalid()
       );
     }
 

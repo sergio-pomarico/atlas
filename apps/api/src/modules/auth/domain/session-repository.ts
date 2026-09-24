@@ -1,4 +1,4 @@
-import type AuthenticationError from "@modules/auth/domain/error.ts";
+import type AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { Result } from "@shared/domain/result.ts";
 
 export interface CreateSessionInput {

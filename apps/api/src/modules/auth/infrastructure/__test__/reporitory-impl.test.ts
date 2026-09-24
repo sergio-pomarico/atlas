@@ -11,7 +11,7 @@ import {
   expect,
   it,
 } from "@jest/globals";
-import AuthenticationError from "@modules/auth/domain/error.ts";
+import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import { AuthRepositoryImpl } from "@modules/auth/infrastructure/reporitory-impl.ts";
 
 describe("AuthRepositoryImpl integration", () => {
