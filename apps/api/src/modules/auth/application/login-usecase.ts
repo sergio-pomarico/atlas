@@ -1,5 +1,5 @@
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
-import AuthenticationError from "@modules/auth/domain/error.ts";
+import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import type { SessionRepository } from "@modules/auth/domain/session-repository.ts";
 import { Result } from "@shared/domain/result.ts";
@@ -50,32 +50,17 @@ export class LoginUserUseCase {
     }
     const user = result.getData();
     if (!(user.isActive() && user.isVerified())) {
-      return Result.fail(
-        AuthenticationError.userNotVerifiedOrBlocked(
-          "Invalid credentials",
-          "The provided email or password is incorrect"
-        )
-      );
+      return Result.fail(AuthenticationError.userNotVerifiedOrBlocked());
     }
     const isPasswordValid = await tryCatch<boolean, Error>(
       this.passwordHasher.compare(dto.password, user.password)
     );
     if (!isPasswordValid.isSuccess) {
-      return Result.fail(
-        AuthenticationError.internalServerError(
-          "Password validation failed",
-          "An error occurred while validating the password"
-        )
-      );
+      return Result.fail(AuthenticationError.passwordValidationFailed());
     }
     if (!isPasswordValid.getData()) {
       await this.repository.increaseFailedLoginAttempts(user.id);
-      return Result.fail(
-        AuthenticationError.invalidCredentials(
-          "Invalid credentials",
-          "The provided email or password is incorrect"
-        )
-      );
+      return Result.fail(AuthenticationError.invalidCredentials());
     }
     const resetResult = await this.repository.resetFailedLoginAttempts(user.id);
     if (!resetResult.isSuccess) {
@@ -93,21 +78,11 @@ export class LoginUserUseCase {
       )
     );
     if (!token.isSuccess) {
-      return Result.fail(
-        AuthenticationError.internalServerError(
-          "Token generation failed",
-          "An error occurred while generating the authentication token"
-        )
-      );
+      return Result.fail(AuthenticationError.accessTokenGenerationFailed());
     }
     const accessToken = token.getData();
     if (!accessToken) {
-      return Result.fail(
-        AuthenticationError.internalServerError(
-          "Token generation failed",
-          "An error occurred while generating the authentication token"
-        )
-      );
+      return Result.fail(AuthenticationError.accessTokenGenerationFailed());
     }
     const sessionResult = await this.sessionRepository.replaceActiveSession({
       userId: user.id,

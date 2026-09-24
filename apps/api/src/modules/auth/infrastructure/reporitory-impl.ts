@@ -1,5 +1,5 @@
 import type { UserEntity } from "@atlas/entities/user.ts";
-import AuthenticationError from "@modules/auth/domain/error.ts";
+import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import { User } from "@modules/auth/domain/user.ts";
 import { Result } from "@shared/domain/result.ts";
@@ -30,12 +30,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     const data = result.getData();
     const user = data ? new User(data) : null;
     if (!user) {
-      return Result.fail(
-        AuthenticationError.userNotFound(
-          "User not found",
-          "The user with the provided ID does not exist"
-        )
-      );
+      return Result.fail(AuthenticationError.userNotFound());
     }
     user.incrementFailedLoginAttempts();
     const updateResult = await tryCatch<UserEntity, PrismaError>(
@@ -48,12 +43,7 @@ export class AuthRepositoryImpl implements AuthRepository {
       })
     );
     if (!updateResult.isSuccess) {
-      return Result.fail(
-        AuthenticationError.internalServerError(
-          "Failed login attempts update failed",
-          "An error occurred while updating failed login attempts"
-        )
-      );
+      return Result.fail(AuthenticationError.failedLoginAttemptsUpdateFailed());
     }
     return Result.success(undefined);
   };
@@ -66,23 +56,13 @@ export class AuthRepositoryImpl implements AuthRepository {
       })
     );
     if (!result.isSuccess) {
-      return Result.fail(
-        AuthenticationError.userNotFound(
-          "Invalid credentials",
-          "The provided email or password is incorrect"
-        )
-      );
+      return Result.fail(AuthenticationError.emailNotFound());
     }
     const data = result.getData();
 
     const user = data ? new User(data) : null;
     if (!user) {
-      return Result.fail(
-        AuthenticationError.userNotFound(
-          "Invalid credentials",
-          "The provided email or password is incorrect"
-        )
-      );
+      return Result.fail(AuthenticationError.emailNotFound());
     }
     return Result.success(user);
   };
@@ -100,12 +80,7 @@ export class AuthRepositoryImpl implements AuthRepository {
     const data = result.getData();
     const user = data ? new User(data) : null;
     if (!user) {
-      return Result.fail(
-        AuthenticationError.userNotFound(
-          "User not found",
-          "The user with the provided ID does not exist"
-        )
-      );
+      return Result.fail(AuthenticationError.userNotFound());
     }
     user.resetFailedLoginAttempts();
     const updateResult = await tryCatch<UserEntity, PrismaError>(
@@ -117,12 +92,7 @@ export class AuthRepositoryImpl implements AuthRepository {
       })
     );
     if (!updateResult.isSuccess) {
-      return Result.fail(
-        AuthenticationError.internalServerError(
-          "Failed login attempts reset failed",
-          "An error occurred while resetting failed login attempts"
-        )
-      );
+      return Result.fail(AuthenticationError.failedLoginAttemptsResetFailed());
     }
     return Result.success(undefined);
   };

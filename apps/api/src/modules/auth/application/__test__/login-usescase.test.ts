@@ -5,7 +5,7 @@ import {
   type LoginInput,
   LoginUserUseCase,
 } from "@modules/auth/application/login-usecase.ts";
-import AuthenticationError from "@modules/auth/domain/error.ts";
+import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { PasswordHasher } from "@modules/auth/domain/password-hasher.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import type { SessionRepository } from "@modules/auth/domain/session-repository.ts";
@@ -112,10 +112,7 @@ describe("LoginUserUseCase", () => {
   });
 
   it("propagates findByEmail failure without side effects", async () => {
-    const error = AuthenticationError.userNotFound(
-      "Invalid credentials",
-      "The provided email or password is incorrect"
-    );
+    const error = AuthenticationError.emailNotFound();
     authRepository.findByEmail.mockResolvedValue(Result.fail(error));
 
     const result = await useCase.run(input);
@@ -172,12 +169,7 @@ describe("LoginUserUseCase", () => {
   it("preserves invalid-credentials behavior when incrementing attempts fails", async () => {
     passwordHasher.compare.mockResolvedValue(false);
     authRepository.increaseFailedLoginAttempts.mockResolvedValue(
-      Result.fail(
-        AuthenticationError.internalServerError(
-          "Increment failed",
-          "Increment failed"
-        )
-      )
+      Result.fail(AuthenticationError.failedLoginAttemptsUpdateFailed())
     );
 
     const result = await useCase.run(input);
@@ -189,10 +181,7 @@ describe("LoginUserUseCase", () => {
   });
 
   it("propagates reset failure before JWT and session creation", async () => {
-    const error = AuthenticationError.internalServerError(
-      "Reset failed",
-      "Could not reset failed login attempts"
-    );
+    const error = AuthenticationError.failedLoginAttemptsResetFailed();
     authRepository.resetFailedLoginAttempts.mockResolvedValue(
       Result.fail(error)
     );
@@ -236,10 +225,7 @@ describe("LoginUserUseCase", () => {
   );
 
   it("does not return the signed token when session replacement fails", async () => {
-    const error = AuthenticationError.internalServerError(
-      "Session failed",
-      "Session failed"
-    );
+    const error = AuthenticationError.sessionReplacementFailed();
     sessionRepository.replaceActiveSession.mockResolvedValue(
       Result.fail(error)
     );
