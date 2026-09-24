@@ -45,7 +45,7 @@ export type RegisterPayload = z.infer<typeof registerSchema>;
 #### 2.1. Definir errores específicos del dominio (si es necesario)
 
 ```typescript
-// apps/api/src/modules/auth/domain/error.ts
+// apps/api/src/modules/auth/domain/error/index.ts
 export default class AuthenticationError extends Error {
   // Métodos estáticos para diferentes tipos de errores
   static userAlreadyExists(
