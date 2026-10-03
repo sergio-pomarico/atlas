@@ -1,5 +1,3 @@
-# Feature Addition PR Template
-
 ## 🧾 Summary
 
 Briefly describe the feature being introduced.

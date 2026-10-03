@@ -2,7 +2,7 @@
 "description": "Investigates Atlas and reviews changes with evidence, without editing code or running tests that generate files."
 "mode": "subagent"
 "model": "openai/gpt-5.6-terra"
-"reasoningEffort": "medium"
+"reasoningEffort": "high"
 "permission":
   "*": "deny"
   "read":

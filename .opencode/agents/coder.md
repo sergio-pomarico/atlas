@@ -1,8 +1,8 @@
 ---
 "description": "Implements the Atlas plan, runs the relevant pnpm scripts, and returns changes and verifiable results."
 "mode": "subagent"
-"model": "openai/gpt-5.6-luna"
-"reasoningEffort": "high"
+"model": "openai/gpt-5.6-terra"
+"reasoningEffort": "medium"
 "permission":
   "*": "deny"
   "read":
