@@ -1,7 +1,7 @@
 ---
 "description": "Coordinates Atlas: delegates investigation and review to explorer, defines the plan, and assigns implementation and verification to coder."
 "mode": "primary"
-"model": "openai/gpt-5.6-sol"
+"model": "openai/gpt-6-sol"
 "reasoningEffort": "medium"
 "permission":
   "*": "deny"
