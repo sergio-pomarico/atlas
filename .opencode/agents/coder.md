@@ -34,6 +34,9 @@
     "git diff --no-ext-diff --no-textconv --check": "allow"
     "git log --oneline -10": "allow"
     "pnpm run check": "allow"
+    "pnpm exec fallow health --complexity --complexity-breakdown --format json --quiet --explain": "allow"
+    "pnpm exec fallow health --complexity --complexity-breakdown --format json --quiet --explain 2>/dev/null": "allow"
+    "true": "allow"
     "pnpm run test": "allow"
     "pnpm run type-check": "allow"
     "pnpm run build": "allow"
@@ -70,6 +73,8 @@ For database operations, use the db:* scripts specified by the API guide. Do not
 ## Verification and delivery
 
 Consult .opencode/references/verification.md to select tests and commands for the change. Run only the relevant checks and report the command, result, test count when available, and limitations. Fix issues caused by your change; distinguish pre-existing failures from environment failures.
+
+For JavaScript/TypeScript changes, follow .opencode/references/complexity.md before implementation and final delivery. Return its findings to orchestrator before undertaking additional refactoring.
 
 Review the final diff and list changed files, covered criteria, and outstanding work for explorer. Do not claim an independent review: that phase belongs to explorer.
 

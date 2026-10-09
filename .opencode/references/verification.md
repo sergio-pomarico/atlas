@@ -16,6 +16,6 @@ In the API, Jest uses --passWithNoTests: a zero exit code does not prove that an
 
 coder runs tests and builds and may produce coverage or generated artifacts; explorer reviews the code, diff, and those results. If another run is needed, return the command and its purpose to orchestrator.
 
-To format affected files, consult the fix script and limit its scope; avoid unrelated bulk formatting. Consult the existing .opencode/skills/fallow skill only for dependency, duplication, or unused-code analysis tasks that need it.
+To format affected files, consult the fix script and limit its scope; avoid unrelated bulk formatting.
 
 Do not run the entire matrix for documentation-only changes: check links and consistency. These commands are current references, not a requirement to run all of them.
