@@ -1,6 +1,7 @@
 import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type {
   CreateSessionInput,
+  SessionIdentity,
   SessionRepository,
 } from "@modules/auth/domain/session-repository.ts";
 import { Result } from "@shared/domain/result.ts";
@@ -18,6 +19,10 @@ interface LockedUserRow {
 
 interface EffectiveTimeRow {
   effectiveNow: Date;
+}
+
+interface SessionValidityRow {
+  valid: boolean;
 }
 
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
@@ -100,6 +105,7 @@ export class SessionRepositoryImpl implements SessionRepository {
         });
         await transaction.session.create({
           data: {
+            id: input.id,
             userId: input.userId,
             ipAddress: input.ipAddress,
             userAgent: input.userAgent,
@@ -113,5 +119,48 @@ export class SessionRepositoryImpl implements SessionRepository {
     return result.isSuccess
       ? Result.success(undefined)
       : Result.fail(mapSessionError(result.getError()));
+  };
+
+  validateActiveSession = async (
+    identity: SessionIdentity
+  ): Promise<Result<boolean, AuthenticationError>> => {
+    const result = await tryCatch<SessionValidityRow[], Error>(
+      this.prismaService.getClient().$queryRaw<SessionValidityRow[]>`
+        SELECT EXISTS (
+          SELECT 1
+          FROM "Session" AS "session"
+          INNER JOIN "User" AS "user" ON "user"."id" = "session"."user_id"
+          WHERE "session"."id" = ${identity.sessionId}
+            AND "session"."user_id" = ${identity.userId}
+            AND "session"."revoked_at" IS NULL
+            AND "session"."expires_at" > clock_timestamp()
+            AND "user"."status" = 'ACTIVE'
+            AND "user"."is_verified"
+        ) AS "valid"
+      `
+    );
+    if (!result.isSuccess) {
+      return Result.fail(AuthenticationError.sessionValidationFailed());
+    }
+    return Result.success(result.getData()[0]?.valid ?? false);
+  };
+
+  revokeActiveSession = async (
+    identity: SessionIdentity
+  ): Promise<Result<boolean, AuthenticationError>> => {
+    const result = await tryCatch<Array<{ id: string }>, Error>(
+      this.prismaService.getClient().$queryRaw<Array<{ id: string }>>`
+        UPDATE "Session"
+        SET "revoked_at" = clock_timestamp()
+        WHERE "id" = ${identity.sessionId}
+          AND "user_id" = ${identity.userId}
+          AND "revoked_at" IS NULL
+          AND "expires_at" > clock_timestamp()
+        RETURNING "id"
+      `
+    );
+    return result.isSuccess
+      ? Result.success(result.getData().length === 1)
+      : Result.fail(AuthenticationError.sessionRevocationFailed());
   };
 }

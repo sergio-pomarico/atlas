@@ -35,6 +35,7 @@ const mockJWTService = {
   sign: jest.fn<JWTService["sign"]>(),
   verify: jest.fn<JWTService["verify"]>(),
 };
+const accessTokens = new Map<string, { sub: string; sid: string }>();
 const loopbackAddressPattern = /127\.0\.0\.1/;
 
 describe("POST /api/auth/login e2e", () => {
@@ -43,15 +44,13 @@ describe("POST /api/auth/login e2e", () => {
   let passwordHasher: ArgonPasswordHasher;
 
   beforeAll(async () => {
-    const [
-      { default: sharedContainer },
-      { default: authContainer },
-      { Server },
-    ] = await Promise.all([
-      import("@shared/infrastructure/container.ts"),
-      import("@modules/auth/infrastructure/container.ts"),
-      import("@shared/infrastructure/server.ts"),
-    ]);
+    const { default: sharedContainer } = await import(
+      "@shared/infrastructure/container.ts"
+    );
+    const { default: authContainer } = await import(
+      "@modules/auth/infrastructure/container.ts"
+    );
+    const { Server } = await import("@shared/infrastructure/server.ts");
 
     postgres = await startPostgresTestDatabase();
     sharedContainer
@@ -66,7 +65,30 @@ describe("POST /api/auth/login e2e", () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    mockJWTService.sign.mockResolvedValue("test-access-token");
+    accessTokens.clear();
+    mockJWTService.sign.mockImplementation((payload) => {
+      if (payload.scope !== "access" || !("sid" in payload)) {
+        return Promise.resolve(null);
+      }
+      const token = `test-access-token-${payload.sid}`;
+      accessTokens.set(token, { sub: payload.sub, sid: payload.sid });
+      return Promise.resolve(token);
+    });
+    mockJWTService.verify.mockImplementation((token) => {
+      const claims = accessTokens.get(token);
+      return Promise.resolve(
+        claims
+          ? {
+              ...claims,
+              scope: "access" as const,
+              iat: 1,
+              exp: 2,
+              iss: "atlas-api",
+              aud: "atlas-client",
+            }
+          : null
+      );
+    });
     await postgres.prisma.session.deleteMany();
     await postgres.prisma.user.deleteMany();
   });
@@ -103,14 +125,14 @@ describe("POST /api/auth/login e2e", () => {
       status: "success",
       message: "User logged in successfully",
       data: {
-        accessToken: "test-access-token",
+        accessToken: expect.stringContaining("test-access-token-"),
       },
     });
     expect(mockJWTService.sign).toHaveBeenCalledWith(
       {
         sub: expect.any(String),
-        email: "active@example.com",
         scope: "access",
+        sid: expect.any(String),
       },
       "access",
       { expiresIn: "5m" }
@@ -118,6 +140,10 @@ describe("POST /api/auth/login e2e", () => {
     expect(updatedUser.failedLoginAttempts).toBe(0);
     expect(sessions).toHaveLength(1);
     expect(sessions[0]?.revokedAt).toBeNull();
+    const firstPayload = mockJWTService.sign.mock.calls[0]?.[0];
+    expect(
+      firstPayload && "sid" in firstPayload ? firstPayload.sid : undefined
+    ).toBe(sessions[0]?.id);
     expect(sessions[0]?.ipAddress).toMatch(loopbackAddressPattern);
     expect(sessions[0]?.userAgent).toBe("Atlas e2e client");
     expect(sessions[0]?.expiresAt.getTime()).toBeGreaterThanOrEqual(
@@ -134,7 +160,7 @@ describe("POST /api/auth/login e2e", () => {
       password: "Password123!",
     });
 
-    await request(app).post("/api/auth/login").send({
+    const firstLogin = await request(app).post("/api/auth/login").send({
       email: "twice@example.com",
       password: "Password123!",
     });
@@ -150,6 +176,69 @@ describe("POST /api/auth/login e2e", () => {
     expect(
       sessions.filter((session) => session.revokedAt === null)
     ).toHaveLength(1);
+    await expect(
+      request(app)
+        .delete("/api/auth/logout")
+        .set("Authorization", firstLogin.body.data.accessToken)
+    ).resolves.toMatchObject({ status: 401 });
+  });
+
+  it("logs out the current session and rejects the same token afterwards", async () => {
+    await createUser({ email: "logout@example.com", password: "Password123!" });
+    const login = await request(app).post("/api/auth/login").send({
+      email: "logout@example.com",
+      password: "Password123!",
+    });
+    const token = login.body.data.accessToken as string;
+
+    await expect(
+      request(app).delete("/api/auth/logout").set("Authorization", token)
+    ).resolves.toMatchObject({ status: 204 });
+    await expect(
+      request(app).delete("/api/auth/logout").set("Authorization", token)
+    ).resolves.toMatchObject({ status: 401 });
+  });
+
+  it("rejects a token after its user is blocked", async () => {
+    const user = await createUser({
+      email: "blocked-after-login@example.com",
+      password: "Password123!",
+    });
+    const login = await request(app).post("/api/auth/login").send({
+      email: "blocked-after-login@example.com",
+      password: "Password123!",
+    });
+    await postgres.prisma.user.update({
+      where: { id: user.id },
+      data: { status: UserStatus.BLOCKED },
+    });
+
+    await expect(
+      request(app)
+        .delete("/api/auth/logout")
+        .set("Authorization", login.body.data.accessToken)
+    ).resolves.toMatchObject({ status: 401 });
+  });
+
+  it("rejects a token after its session expires", async () => {
+    const user = await createUser({
+      email: "expired-after-login@example.com",
+      password: "Password123!",
+    });
+    const login = await request(app).post("/api/auth/login").send({
+      email: "expired-after-login@example.com",
+      password: "Password123!",
+    });
+    await postgres.prisma.session.updateMany({
+      where: { userId: user.id },
+      data: { expiresAt: new Date("2020-01-01T00:00:00.000Z") },
+    });
+
+    await expect(
+      request(app)
+        .delete("/api/auth/logout")
+        .set("Authorization", login.body.data.accessToken)
+    ).resolves.toMatchObject({ status: 401 });
   });
 
   it("ignores X-Forwarded-For and stores the direct connection IP", async () => {
