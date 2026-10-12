@@ -37,6 +37,11 @@
         "CODEGRAPH_MCP_TOOLS": "explore"
       },
       "enabled": true
+    },
+    "engram": {
+      "type": "local",
+      "command": ["engram", "mcp"],
+      "enabled": true
     }
   }
 }
