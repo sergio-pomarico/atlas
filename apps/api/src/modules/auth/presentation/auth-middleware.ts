@@ -1,6 +1,7 @@
 import type { AccessToken } from "@atlas/schemas/lib/auth/token.ts";
 import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { SessionRepository } from "@modules/auth/domain/session-repository.ts";
+import { Result } from "@shared/domain/result.ts";
 import {
   type JWTService,
   parseAccessToken,
@@ -33,26 +34,12 @@ export class AuthMiddleware {
       }
 
       try {
-        const payload = parseAccessToken(
-          await this.jwtService.verify(token, scope)
-        );
-        if (!payload) {
-          next(AuthenticationError.unauthorized());
+        const authentication = await this.authenticate(token, scope);
+        if (!authentication.isSuccess) {
+          next(authentication.getError());
           return;
         }
-
-        const session = await this.sessionValidator.validateActiveSession({
-          sessionId: payload.sid,
-          userId: payload.sub,
-        });
-        if (!session.isSuccess) {
-          next(session.getError());
-          return;
-        }
-        if (!session.getData()) {
-          next(AuthenticationError.unauthorized());
-          return;
-        }
+        const payload = authentication.getData();
 
         req.auth = {
           userId: payload.sub,
@@ -64,5 +51,28 @@ export class AuthMiddleware {
         next(error);
       }
     };
+  };
+
+  private readonly authenticate = async (
+    token: string,
+    scope: AccessToken["scope"]
+  ): Promise<Result<AccessToken, AuthenticationError>> => {
+    const payload = parseAccessToken(
+      await this.jwtService.verify(token, scope)
+    );
+    if (!payload) {
+      return Result.fail(AuthenticationError.unauthorized());
+    }
+
+    const session = await this.sessionValidator.validateActiveSession({
+      sessionId: payload.sid,
+      userId: payload.sub,
+    });
+    if (!session.isSuccess) {
+      return Result.fail(session.getError());
+    }
+    return session.getData()
+      ? Result.success(payload)
+      : Result.fail(AuthenticationError.unauthorized());
   };
 }

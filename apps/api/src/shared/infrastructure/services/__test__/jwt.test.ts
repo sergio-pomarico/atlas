@@ -30,12 +30,12 @@ jest.unstable_mockModule(
 );
 
 let JWTService: JWTModule["JWTService"];
-let JWT_ALGORITHM: JWTModule["JWT_ALGORITHM"];
 let parseAccessToken: JWTModule["parseAccessToken"];
+const JWT_ALGORITHM = "RS256";
 
 describe("JWTService", () => {
   beforeAll(async () => {
-    ({ JWTService, JWT_ALGORITHM, parseAccessToken } = await import(
+    ({ JWTService, parseAccessToken } = await import(
       "@shared/infrastructure/services/jwt.ts"
     ));
   });

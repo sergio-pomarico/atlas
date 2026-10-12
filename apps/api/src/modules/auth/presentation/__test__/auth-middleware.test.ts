@@ -40,7 +40,7 @@ describe("AuthMiddleware", () => {
       jwtService.verify.mockResolvedValue(payload);
       const { next, req } = await run(authorization);
       expect(next).toHaveBeenCalledWith(expect.any(AuthenticationError));
-      expect(next).not.toHaveBeenCalledWith();
+      expect(next).toHaveBeenCalledTimes(1);
       expect(req.auth).toBeUndefined();
     }
   );
@@ -51,9 +51,10 @@ describe("AuthMiddleware", () => {
     sessionValidator.validateActiveSession.mockResolvedValue(
       Result.fail(error)
     );
-    const { next } = await run("token");
+    const { next, req } = await run("token");
     expect(next).toHaveBeenCalledWith(error);
-    expect(next).not.toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(req.auth).toBeUndefined();
   });
 
   it("rejects an invalid session without continuing", async () => {
@@ -61,6 +62,29 @@ describe("AuthMiddleware", () => {
     const { next } = await run("token");
     expect(next).toHaveBeenCalledWith(expect.any(AuthenticationError));
     expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates token verification exceptions", async () => {
+    const error = new Error("JWT verification failed");
+    jwtService.verify.mockRejectedValue(error);
+
+    const { next, req } = await run("token");
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(req.auth).toBeUndefined();
+  });
+
+  it("propagates session validation exceptions", async () => {
+    const error = new Error("Session validation failed");
+    jwtService.verify.mockResolvedValue(accessToken());
+    sessionValidator.validateActiveSession.mockRejectedValue(error);
+
+    const { next, req } = await run("token");
+
+    expect(next).toHaveBeenCalledWith(error);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(req.auth).toBeUndefined();
   });
 
   it("assigns typed auth data only after a valid session", async () => {
