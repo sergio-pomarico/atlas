@@ -93,6 +93,14 @@ describe("AuthenticationError factories", () => {
       ErrorCode.INTERNAL_SERVER,
       500,
     ],
+    [
+      "unauthorized",
+      AuthenticationError.unauthorized(),
+      "User not authenticated",
+      "You must be logged in to access this resource",
+      ErrorCode.UNAUTHORIZED,
+      401,
+    ],
   ])(
     "creates the %s error contract",
     (_name, error, message, description, code, statusCode) => {

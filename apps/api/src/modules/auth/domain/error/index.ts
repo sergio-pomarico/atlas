@@ -87,4 +87,22 @@ export default class AuthenticationError extends AppError {
       authenticationErrorCatalog.sessionLifetimeConfigurationInvalid
     );
   }
+
+  static unauthorized(): AuthenticationError {
+    return AuthenticationError.fromDefinition(
+      authenticationErrorCatalog.unauthorized
+    );
+  }
+
+  static sessionValidationFailed(): AuthenticationError {
+    return AuthenticationError.fromDefinition(
+      authenticationErrorCatalog.sessionValidationFailed
+    );
+  }
+
+  static sessionRevocationFailed(): AuthenticationError {
+    return AuthenticationError.fromDefinition(
+      authenticationErrorCatalog.sessionRevocationFailed
+    );
+  }
 }
