@@ -8,7 +8,7 @@ import {
 import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
 
-export const JWT_ALGORITHM = "RS256";
+const JWT_ALGORITHM = "RS256";
 
 export type JWTError = jwt.JsonWebTokenError | jwt.TokenExpiredError;
 

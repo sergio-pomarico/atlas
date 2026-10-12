@@ -8,8 +8,6 @@ export const TOKEN_SCOPE = {
   REFRESH: "refresh",
 } as const;
 
-export const tokenScopeSchema = z.enum(TOKEN_SCOPE);
-
 export const accessTokenSchema = z.object({
   sub: z.string().min(1),
   scope: z.literal(TOKEN_SCOPE.ACCESS),
@@ -21,4 +19,3 @@ export const accessTokenSchema = z.object({
 });
 
 export type AccessToken = z.infer<typeof accessTokenSchema>;
-export type TokenScope = z.infer<typeof tokenScopeSchema>;

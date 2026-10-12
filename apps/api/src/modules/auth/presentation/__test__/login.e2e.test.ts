@@ -98,7 +98,6 @@ describe("POST /api/auth/login e2e", () => {
   }, 60_000);
 
   it("logs in an active verified user", async () => {
-    const beforeLogin = new Date();
     const user = await createUser({
       email: "active@example.com",
       password: "Password123!",
@@ -118,7 +117,6 @@ describe("POST /api/auth/login e2e", () => {
     const sessions = await postgres.prisma.session.findMany({
       where: { userId: user.id },
     });
-    const afterLogin = new Date();
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -128,29 +126,23 @@ describe("POST /api/auth/login e2e", () => {
         accessToken: expect.stringContaining("test-access-token-"),
       },
     });
+    expect(sessions).toHaveLength(1);
+    const session = sessions[0] as (typeof sessions)[number];
     expect(mockJWTService.sign).toHaveBeenCalledWith(
       {
-        sub: expect.any(String),
+        sub: user.id,
         scope: "access",
-        sid: expect.any(String),
+        sid: session.id,
       },
       "access",
       { expiresIn: "5m" }
     );
     expect(updatedUser.failedLoginAttempts).toBe(0);
-    expect(sessions).toHaveLength(1);
-    expect(sessions[0]?.revokedAt).toBeNull();
-    const firstPayload = mockJWTService.sign.mock.calls[0]?.[0];
-    expect(
-      firstPayload && "sid" in firstPayload ? firstPayload.sid : undefined
-    ).toBe(sessions[0]?.id);
-    expect(sessions[0]?.ipAddress).toMatch(loopbackAddressPattern);
-    expect(sessions[0]?.userAgent).toBe("Atlas e2e client");
-    expect(sessions[0]?.expiresAt.getTime()).toBeGreaterThanOrEqual(
-      beforeLogin.getTime() + 30 * 24 * 60 * 60 * 1000
-    );
-    expect(sessions[0]?.expiresAt.getTime()).toBeLessThanOrEqual(
-      afterLogin.getTime() + 30 * 24 * 60 * 60 * 1000
+    expect(session.revokedAt).toBeNull();
+    expect(session.ipAddress).toMatch(loopbackAddressPattern);
+    expect(session.userAgent).toBe("Atlas e2e client");
+    expect(session.expiresAt.getTime() - session.createdAt.getTime()).toBe(
+      30 * 24 * 60 * 60 * 1000
     );
   });
 
