@@ -1,4 +1,9 @@
 import {
+  ACCESS_TOKEN_AUDIENCE,
+  ACCESS_TOKEN_ISSUER,
+  type AccessToken,
+} from "@atlas/schemas/lib/auth/token.ts";
+import {
   beforeAll,
   beforeEach,
   describe,
@@ -6,7 +11,6 @@ import {
   it,
   jest,
 } from "@jest/globals";
-import type { Token } from "@shared/infrastructure/services/jwt.ts";
 import jwt from "jsonwebtoken";
 
 type JWTModule = typeof import("@shared/infrastructure/services/jwt.ts");
@@ -27,12 +31,11 @@ jest.unstable_mockModule(
 
 let JWTService: JWTModule["JWTService"];
 let JWT_ALGORITHM: JWTModule["JWT_ALGORITHM"];
-let JWT_AUDIENCE: JWTModule["JWT_AUDIENCE"];
-let JWT_ISSUER: JWTModule["JWT_ISSUER"];
+let parseAccessToken: JWTModule["parseAccessToken"];
 
 describe("JWTService", () => {
   beforeAll(async () => {
-    ({ JWTService, JWT_ALGORITHM, JWT_AUDIENCE, JWT_ISSUER } = await import(
+    ({ JWTService, JWT_ALGORITHM, parseAccessToken } = await import(
       "@shared/infrastructure/services/jwt.ts"
     ));
   });
@@ -61,7 +64,11 @@ describe("JWTService", () => {
 
     await expect(
       jwtService.sign(
-        { sub: "user-123", email: "user@example.com", scope: "access" },
+        {
+          sub: "user-123",
+          scope: "access",
+          sid: "session-123",
+        },
         "access",
         { expiresIn: "5m" }
       )
@@ -70,15 +77,15 @@ describe("JWTService", () => {
     expect(mockGetSecret).toHaveBeenCalledWith("access_key_private");
     expect(signSpy.mock.calls[0]?.[0]).toEqual({
       sub: "user-123",
-      email: "user@example.com",
       scope: "access",
+      sid: "session-123",
     });
     expect(signSpy.mock.calls[0]?.[1]).toBe("private-key");
     expect(signSpy.mock.calls[0]?.[2]).toEqual({
       expiresIn: "5m",
       algorithm: JWT_ALGORITHM,
-      audience: JWT_AUDIENCE,
-      issuer: JWT_ISSUER,
+      audience: ACCESS_TOKEN_AUDIENCE,
+      issuer: ACCESS_TOKEN_ISSUER,
     });
     expect(signSpy.mock.calls[0]?.[3]).toEqual(expect.any(Function));
   });
@@ -93,7 +100,11 @@ describe("JWTService", () => {
     const jwtService = JWTService.getInstance();
 
     await jwtService.sign(
-      { sub: "user-123", email: "user@example.com", scope: "access" },
+      {
+        sub: "user-123",
+        scope: "access",
+        sid: "session-123",
+      },
       "access",
       {
         algorithm: "HS256",
@@ -104,8 +115,8 @@ describe("JWTService", () => {
 
     expect(signSpy.mock.calls[0]?.[2]).toEqual({
       algorithm: JWT_ALGORITHM,
-      audience: JWT_AUDIENCE,
-      issuer: JWT_ISSUER,
+      audience: ACCESS_TOKEN_AUDIENCE,
+      issuer: ACCESS_TOKEN_ISSUER,
     });
   });
 
@@ -118,10 +129,7 @@ describe("JWTService", () => {
       });
     const jwtService = JWTService.getInstance();
 
-    await jwtService.sign(
-      { sub: "user-123", email: "user@example.com", scope: "refresh" },
-      "refresh"
-    );
+    await jwtService.sign({ sub: "user-123", scope: "refresh" }, "refresh");
 
     expect(mockGetSecret).toHaveBeenCalledWith("refresh_key_private");
   });
@@ -137,7 +145,11 @@ describe("JWTService", () => {
 
     await expect(
       jwtService.sign(
-        { sub: "user-123", email: "user@example.com", scope: "access" },
+        {
+          sub: "user-123",
+          scope: "access",
+          sid: "session-123",
+        },
         "access"
       )
     ).resolves.toBeNull();
@@ -154,17 +166,21 @@ describe("JWTService", () => {
 
     await expect(
       jwtService.sign(
-        { sub: "user-123", email: "user@example.com", scope: "access" },
+        {
+          sub: "user-123",
+          scope: "access",
+          sid: "session-123",
+        },
         "access"
       )
     ).resolves.toBeNull();
   });
 
   it("verifies tokens with RS256, issuer, and audience constraints", async () => {
-    const decodedToken: Token = {
+    const decodedToken: AccessToken = {
       sub: "user-123",
-      email: "user@example.com",
       scope: "access",
+      sid: "session-123",
       iat: 1,
       exp: 2,
       iss: "atlas-api",
@@ -178,7 +194,7 @@ describe("JWTService", () => {
       });
     const jwtService = JWTService.getInstance();
 
-    await expect(jwtService.verify<Token>("jwt-token", "access")).resolves.toBe(
+    await expect(jwtService.verify("jwt-token", "access")).resolves.toBe(
       decodedToken
     );
     expect(mockGetSecret).toHaveBeenCalledWith("access_key_public");
@@ -187,8 +203,8 @@ describe("JWTService", () => {
       "public-key",
       {
         algorithms: [JWT_ALGORITHM],
-        audience: JWT_AUDIENCE,
-        issuer: JWT_ISSUER,
+        audience: ACCESS_TOKEN_AUDIENCE,
+        issuer: ACCESS_TOKEN_ISSUER,
       },
       expect.any(Function)
     );
@@ -203,9 +219,7 @@ describe("JWTService", () => {
       });
     const jwtService = JWTService.getInstance();
 
-    await expect(
-      jwtService.verify<Token>("jwt-token", "access")
-    ).resolves.toBeNull();
+    await expect(jwtService.verify("jwt-token", "access")).resolves.toBeNull();
   });
 
   it("returns null when token audience is invalid", async () => {
@@ -220,9 +234,7 @@ describe("JWTService", () => {
       });
     const jwtService = JWTService.getInstance();
 
-    await expect(
-      jwtService.verify<Token>("jwt-token", "access")
-    ).resolves.toBeNull();
+    await expect(jwtService.verify("jwt-token", "access")).resolves.toBeNull();
   });
 
   it("returns null when token issuer is invalid", async () => {
@@ -234,8 +246,49 @@ describe("JWTService", () => {
       });
     const jwtService = JWTService.getInstance();
 
-    await expect(
-      jwtService.verify<Token>("jwt-token", "access")
-    ).resolves.toBeNull();
+    await expect(jwtService.verify("jwt-token", "access")).resolves.toBeNull();
+  });
+
+  it("accepts only complete access token claims", () => {
+    const token: AccessToken = {
+      sub: "user-123",
+      scope: "access",
+      sid: "session-123",
+      iat: 1,
+      exp: 2,
+      iss: "atlas-api",
+      aud: "atlas-client",
+    };
+
+    expect(parseAccessToken(token)).toEqual(token);
+    for (const claim of ["sub", "sid", "iat", "exp", "iss", "aud"] as const) {
+      expect(parseAccessToken({ ...token, [claim]: undefined })).toBeNull();
+    }
+    expect(parseAccessToken({ ...token, scope: "refresh" })).toBeNull();
+    expect(parseAccessToken({ ...token, sub: "" })).toBeNull();
+    expect(parseAccessToken({ ...token, sid: "" })).toBeNull();
+  });
+
+  it("returns a sanitized access token", () => {
+    const token = {
+      sub: "user-123",
+      scope: "access",
+      sid: "session-123",
+      iat: 1,
+      exp: 2,
+      iss: "atlas-api",
+      aud: "atlas-client",
+      unexpected: "claim",
+    };
+
+    expect(parseAccessToken(token)).toEqual({
+      sub: "user-123",
+      scope: "access",
+      sid: "session-123",
+      iat: 1,
+      exp: 2,
+      iss: "atlas-api",
+      aud: "atlas-client",
+    });
   });
 });

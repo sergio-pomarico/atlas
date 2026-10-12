@@ -1,23 +1,31 @@
-// fallow-ignore-file unused-export
+import {
+  ACCESS_TOKEN_AUDIENCE,
+  ACCESS_TOKEN_ISSUER,
+  type AccessToken,
+  accessTokenSchema,
+  type TOKEN_SCOPE,
+} from "@atlas/schemas/lib/auth/token.ts";
 import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
 
-export type Scope = "access" | "mfa" | "refresh";
-type SigningKeyScope = Exclude<Scope, "mfa">;
 export const JWT_ALGORITHM = "RS256";
-export const JWT_AUDIENCE = "atlas-client";
-export const JWT_ISSUER = "atlas-api";
 
 export type JWTError = jwt.JsonWebTokenError | jwt.TokenExpiredError;
 
-export interface Token {
+export type AccessTokenPayload = Omit<
+  AccessToken,
+  "iat" | "exp" | "iss" | "aud"
+>;
+interface RefreshTokenPayload {
   sub: string;
-  email: string;
-  scope: Scope;
-  iat: number;
-  exp: number;
-  iss?: string;
-  aud?: string;
+  scope: typeof TOKEN_SCOPE.REFRESH;
+}
+export type TokenPayload = AccessTokenPayload | RefreshTokenPayload;
+type SigningKeyScope = TokenPayload["scope"];
+
+export function parseAccessToken(payload: unknown): AccessToken | null {
+  const result = accessTokenSchema.safeParse(payload);
+  return result.success ? result.data : null;
 }
 
 export class JWTService {
@@ -35,7 +43,7 @@ export class JWTService {
   }
 
   async sign(
-    payload: Omit<Token, "iat" | "exp" | "iss" | "aud">,
+    payload: TokenPayload,
     keyName: SigningKeyScope,
     options?: jwt.SignOptions | undefined
   ): Promise<string | null> {
@@ -49,8 +57,8 @@ export class JWTService {
         {
           ...options,
           algorithm: JWT_ALGORITHM,
-          audience: JWT_AUDIENCE,
-          issuer: JWT_ISSUER,
+          audience: ACCESS_TOKEN_AUDIENCE,
+          issuer: ACCESS_TOKEN_ISSUER,
         },
         (err, token) => {
           if (err) {
@@ -62,10 +70,10 @@ export class JWTService {
     });
   }
 
-  async verify<Token>(
+  async verify(
     token: string,
     keyName: SigningKeyScope
-  ): Promise<Token | null> {
+  ): Promise<unknown | null> {
     const signingKey = await this.secretManager.getSecret(
       `${keyName}_key_public`
     );
@@ -75,14 +83,14 @@ export class JWTService {
         signingKey.secretValue,
         {
           algorithms: [JWT_ALGORITHM],
-          audience: JWT_AUDIENCE,
-          issuer: JWT_ISSUER,
+          audience: ACCESS_TOKEN_AUDIENCE,
+          issuer: ACCESS_TOKEN_ISSUER,
         },
         (err, decoded) => {
           if (err) {
             return resolve(null);
           }
-          return resolve(decoded as Token);
+          return resolve(decoded);
         }
       );
     });
