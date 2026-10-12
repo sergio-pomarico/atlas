@@ -82,4 +82,22 @@ export const authenticationErrorCatalog = Object.freeze({
     ErrorCode.INTERNAL_SERVER,
     500
   ),
+  unauthorized: errorDefinition(
+    "User not authenticated",
+    "You must be logged in to access this resource",
+    ErrorCode.UNAUTHORIZED,
+    401
+  ),
+  sessionValidationFailed: errorDefinition(
+    "Session validation failed",
+    "An error occurred while validating the session",
+    ErrorCode.INTERNAL_SERVER,
+    500
+  ),
+  sessionRevocationFailed: errorDefinition(
+    "Session revocation failed",
+    "An error occurred while revoking the session",
+    ErrorCode.INTERNAL_SERVER,
+    500
+  ),
 });
