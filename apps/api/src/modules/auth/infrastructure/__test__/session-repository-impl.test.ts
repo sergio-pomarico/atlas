@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { UserStatus } from "@atlas/entities/user.ts";
 import {
   type StartedPostgresTestDatabase,
@@ -34,10 +35,11 @@ describe("SessionRepositoryImpl integration", () => {
 
   it("creates the first open session", async () => {
     const user = await createUser("first@example.com", "3010000001");
+    const id = randomUUID();
     const before = await databaseClock();
 
     const result = await repository.replaceActiveSession(
-      sessionInput(user.id, { userAgent: "test-agent" })
+      sessionInput(user.id, { id, userAgent: "test-agent" })
     );
     const after = await databaseClock();
     const sessions = await postgres.prisma.session.findMany();
@@ -45,6 +47,7 @@ describe("SessionRepositoryImpl integration", () => {
     expect(result.isSuccess).toBe(true);
     expect(sessions).toHaveLength(1);
     expect(sessions[0]).toMatchObject({
+      id,
       userId: user.id,
       ipAddress: "127.0.0.1",
       userAgent: "test-agent",
@@ -289,6 +292,117 @@ describe("SessionRepositoryImpl integration", () => {
     ).rejects.toThrow();
   });
 
+  it("validates only the matching active, eligible session", async () => {
+    const user = await createUser("validate@example.com", "3010000009");
+    const id = randomUUID();
+    await repository.replaceActiveSession(sessionInput(user.id, { id }));
+
+    await expect(
+      repository.validateActiveSession({ sessionId: id, userId: user.id })
+    ).resolves.toMatchObject({ isSuccess: true });
+    expect(
+      (
+        await repository.validateActiveSession({
+          sessionId: id,
+          userId: user.id,
+        })
+      ).getData()
+    ).toBe(true);
+    expect(
+      (
+        await repository.validateActiveSession({
+          sessionId: id,
+          userId: "other-user",
+        })
+      ).getData()
+    ).toBe(false);
+  });
+
+  it.each([
+    ["blocked", { status: UserStatus.BLOCKED }],
+    ["inactive", { status: UserStatus.INACTIVE }],
+    ["unverified", { verified: false }],
+  ])("rejects a %s session owner at validation time", async (_label, data) => {
+    const user = await createUser(
+      `${_label}-validate@example.com`,
+      `30500000${_label.length}`,
+      data
+    );
+    const id = randomUUID();
+    await postgres.prisma.session.create({
+      data: {
+        id,
+        userId: user.id,
+        ipAddress: "127.0.0.1",
+        expiresAt: new Date("2030-01-01T00:00:00.000Z"),
+      },
+    });
+    expect(
+      (
+        await repository.validateActiveSession({
+          sessionId: id,
+          userId: user.id,
+        })
+      ).getData()
+    ).toBe(false);
+  });
+
+  it("rejects missing, revoked, and expired sessions and revokes once", async () => {
+    const user = await createUser("revoke@example.com", "3010000010");
+    const id = randomUUID();
+    await repository.replaceActiveSession(sessionInput(user.id, { id }));
+    expect(
+      (
+        await repository.revokeActiveSession({ sessionId: id, userId: user.id })
+      ).getData()
+    ).toBe(true);
+    expect(
+      (
+        await repository.revokeActiveSession({ sessionId: id, userId: user.id })
+      ).getData()
+    ).toBe(false);
+    expect(
+      (
+        await repository.validateActiveSession({
+          sessionId: id,
+          userId: user.id,
+        })
+      ).getData()
+    ).toBe(false);
+    expect(
+      (
+        await repository.validateActiveSession({
+          sessionId: randomUUID(),
+          userId: user.id,
+        })
+      ).getData()
+    ).toBe(false);
+  });
+
+  it("rejects an expired open session", async () => {
+    const user = await createUser(
+      "expired-validation@example.com",
+      "3010000011"
+    );
+    const id = randomUUID();
+    await postgres.prisma.session.create({
+      data: {
+        id,
+        userId: user.id,
+        ipAddress: "127.0.0.1",
+        expiresAt: new Date("2020-01-01T00:00:00.000Z"),
+      },
+    });
+    expect(
+      (
+        await repository.validateActiveSession({
+          sessionId: id,
+          userId: user.id,
+        })
+      ).getData()
+    ).toBe(false);
+  });
+
   function createUser(
     email: string,
     phone: string,
@@ -341,9 +455,14 @@ describe("SessionRepositoryImpl integration", () => {
 
 function sessionInput(
   userId: string,
-  overrides: { userAgent?: string | null; sessionTtlDays?: number } = {}
+  overrides: {
+    id?: string;
+    userAgent?: string | null;
+    sessionTtlDays?: number;
+  } = {}
 ) {
   return {
+    id: overrides.id ?? randomUUID(),
     userId,
     ipAddress: "127.0.0.1",
     userAgent: overrides.userAgent ?? null,

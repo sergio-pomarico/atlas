@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
@@ -66,12 +67,13 @@ export class LoginUserUseCase {
     if (!resetResult.isSuccess) {
       return Result.fail(resetResult.getError());
     }
+    const sessionId = randomUUID();
     const token = await tryCatch<string | null, JWTError>(
       this.jwtService.sign(
         {
           sub: user.id,
-          email: user.email,
           scope: "access",
+          sid: sessionId,
         },
         "access",
         { expiresIn: "5m" }
@@ -85,6 +87,7 @@ export class LoginUserUseCase {
       return Result.fail(AuthenticationError.accessTokenGenerationFailed());
     }
     const sessionResult = await this.sessionRepository.replaceActiveSession({
+      id: sessionId,
       userId: user.id,
       ipAddress: dto.ipAddress,
       userAgent: dto.userAgent,

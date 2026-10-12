@@ -20,6 +20,8 @@ const authRepository: jest.Mocked<AuthRepository> = {
 };
 const sessionRepository: jest.Mocked<SessionRepository> = {
   replaceActiveSession: jest.fn(),
+  validateActiveSession: jest.fn(),
+  revokeActiveSession: jest.fn(),
 };
 const passwordHasher: jest.Mocked<PasswordHasher> = {
   hash: jest.fn(),
@@ -86,17 +88,27 @@ describe("LoginUserUseCase", () => {
       "Password123!",
       "hashed-password"
     );
-    expect(jwtService.sign).toHaveBeenCalledWith(
-      { sub: "user-123", email: "test@example.com", scope: "access" },
-      "access",
-      { expiresIn: "5m" }
+    const tokenPayload = jwtService.sign.mock.calls[0]?.[0];
+    const sessionInput =
+      sessionRepository.replaceActiveSession.mock.calls[0]?.[0];
+    if (!(tokenPayload && sessionInput && "sid" in tokenPayload)) {
+      throw new Error("Expected an access token and session input");
+    }
+    expect(tokenPayload).toEqual(
+      expect.objectContaining({
+        sub: "user-123",
+        scope: "access",
+        sid: expect.any(String),
+      })
     );
-    expect(sessionRepository.replaceActiveSession).toHaveBeenCalledWith({
+    expect(sessionInput).toEqual({
+      id: tokenPayload.sid,
       userId: "user-123",
       ipAddress: "127.0.0.1",
       userAgent: "Atlas test client",
       sessionTtlDays: 30,
     });
+    expect(sessionInput.id).toBe(tokenPayload.sid);
   });
 
   it("resets failed attempts before signing and replacing the session", async () => {
