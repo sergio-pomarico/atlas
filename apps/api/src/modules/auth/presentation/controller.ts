@@ -3,6 +3,8 @@ import type {
   LoginResult,
   LoginUserUseCase,
 } from "@modules/auth/application/login-usecase.ts";
+import type { LogoutUserUseCase } from "@modules/auth/application/logout-usecase.ts";
+import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { ApiSuccessResponse } from "@shared/domain/response.ts";
 import type { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
@@ -10,9 +12,14 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class AuthController {
   private readonly loginUserUseCase: LoginUserUseCase;
+  private readonly logoutUserUseCase: LogoutUserUseCase;
 
-  constructor(@inject("LoginUserUseCase") loginUserUseCase: LoginUserUseCase) {
+  constructor(
+    @inject("LoginUserUseCase") loginUserUseCase: LoginUserUseCase,
+    @inject("LogoutUserUseCase") logoutUserUseCase: LogoutUserUseCase
+  ) {
     this.loginUserUseCase = loginUserUseCase;
+    this.logoutUserUseCase = logoutUserUseCase;
   }
 
   login = async (
@@ -37,5 +44,21 @@ export class AuthController {
       message: "User logged in successfully",
       data: credentials,
     });
+  };
+
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.auth) {
+      next(AuthenticationError.unauthorized());
+      return;
+    }
+    const result = await this.logoutUserUseCase.run(
+      req.auth.sessionId,
+      req.auth.userId
+    );
+    if (!result.isSuccess) {
+      next(result.getError());
+      return;
+    }
+    res.status(204).send();
   };
 }
