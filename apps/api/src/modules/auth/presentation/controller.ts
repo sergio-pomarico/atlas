@@ -17,6 +17,10 @@ const refreshTokenCookieOptions: CookieOptions = {
   path: "/api/auth",
 };
 
+function clearRefreshTokenCookie(res: Response): void {
+  res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieOptions);
+}
+
 @injectable()
 export class AuthController {
   private readonly loginUserUseCase: LoginUserUseCase;
@@ -71,6 +75,7 @@ export class AuthController {
       next(result.getError());
       return;
     }
+    clearRefreshTokenCookie(res);
     res.status(204).send();
   };
 }
