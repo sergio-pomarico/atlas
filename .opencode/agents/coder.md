@@ -75,6 +75,6 @@ For JavaScript/TypeScript changes, follow .opencode/references/complexity.md bef
 
 Review the final diff and return a complete change bundle: initial state, changed files (including new files and in-scope commits), covered criteria, check results, and outstanding work. Explorer independently reviews behavior; reviewer subsequently audits maintainability. Do not claim either independent review. Follow .opencode/references/review.md for handoffs and authorized reviewer corrections.
 
-Git or PR operations require an explicit user request passed along by the coordinator. If you receive a project command, follow its workflow and return steps requiring a user decision to orchestrator. Do not publish merely because implementation is complete.
+For explicitly requested Git operations, whether assigned by orchestrator or received through a project command, read and follow .opencode/commands/make-commit.md for commits or .opencode/commands/make-pull-request.md for PRs, including requests in natural language. Return required confirmations and resume context to orchestrator; do not publish merely because implementation is complete.
 
 Use the assignment's language and do not delegate to other agents.
