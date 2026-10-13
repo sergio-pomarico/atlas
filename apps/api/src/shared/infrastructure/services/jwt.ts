@@ -3,7 +3,8 @@ import {
   ACCESS_TOKEN_ISSUER,
   type AccessToken,
   accessTokenSchema,
-  type TOKEN_SCOPE,
+  type RefreshToken,
+  refreshTokenSchema,
 } from "@atlas/schemas/lib/auth/token.ts";
 import { SecretManagerService } from "@shared/infrastructure/services/secret-manager.ts";
 import jwt from "jsonwebtoken";
@@ -16,15 +17,17 @@ export type AccessTokenPayload = Omit<
   AccessToken,
   "iat" | "exp" | "iss" | "aud"
 >;
-interface RefreshTokenPayload {
-  sub: string;
-  scope: typeof TOKEN_SCOPE.REFRESH;
-}
+type RefreshTokenPayload = Omit<RefreshToken, "iat" | "iss" | "aud">;
 export type TokenPayload = AccessTokenPayload | RefreshTokenPayload;
 type SigningKeyScope = TokenPayload["scope"];
 
 export function parseAccessToken(payload: unknown): AccessToken | null {
   const result = accessTokenSchema.safeParse(payload);
+  return result.success ? result.data : null;
+}
+
+export function parseRefreshToken(payload: unknown): RefreshToken | null {
+  const result = refreshTokenSchema.safeParse(payload);
   return result.success ? result.data : null;
 }
 

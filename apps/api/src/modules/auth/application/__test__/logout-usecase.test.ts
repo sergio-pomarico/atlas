@@ -6,6 +6,7 @@ import { Result } from "@shared/domain/result.ts";
 
 describe("LogoutUserUseCase", () => {
   const sessionRepository: jest.Mocked<SessionRepository> = {
+    resolveSessionExpiration: jest.fn(),
     replaceActiveSession: jest.fn(),
     validateActiveSession: jest.fn(),
     revokeActiveSession: jest.fn(),

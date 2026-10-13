@@ -58,6 +58,12 @@ export const authenticationErrorCatalog = Object.freeze({
     ErrorCode.INTERNAL_SERVER,
     500
   ),
+  refreshTokenGenerationFailed: errorDefinition(
+    "Token generation failed",
+    "An error occurred while generating the authentication token",
+    ErrorCode.INTERNAL_SERVER,
+    500
+  ),
   failedLoginAttemptsUpdateFailed: errorDefinition(
     "Failed login attempts update failed",
     "An error occurred while updating failed login attempts",
@@ -79,6 +85,12 @@ export const authenticationErrorCatalog = Object.freeze({
   sessionLifetimeConfigurationInvalid: errorDefinition(
     "Session configuration invalid",
     "The session lifetime configuration is invalid",
+    ErrorCode.INTERNAL_SERVER,
+    500
+  ),
+  sessionLifetimeResolutionFailed: errorDefinition(
+    "Session lifetime resolution failed",
+    "An error occurred while resolving the session lifetime",
     ErrorCode.INTERNAL_SERVER,
     500
   ),

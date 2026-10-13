@@ -19,3 +19,15 @@ export const accessTokenSchema = z.object({
 });
 
 export type AccessToken = z.infer<typeof accessTokenSchema>;
+
+export const refreshTokenSchema = z.object({
+  sub: z.string().min(1),
+  scope: z.literal(TOKEN_SCOPE.REFRESH),
+  sid: z.string().min(1),
+  iat: z.number(),
+  exp: z.number(),
+  iss: z.literal(ACCESS_TOKEN_ISSUER),
+  aud: z.literal(ACCESS_TOKEN_AUDIENCE),
+});
+
+export type RefreshToken = z.infer<typeof refreshTokenSchema>;
