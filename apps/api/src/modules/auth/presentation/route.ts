@@ -23,6 +23,7 @@ export class AuthRoutes {
       schemaValidation(loginSchema),
       this.controller.login
     );
+    this.router.post("/refresh", this.controller.refresh);
     this.router.delete(
       "/logout",
       this.authMiddleware.require(TOKEN_SCOPE.ACCESS),
