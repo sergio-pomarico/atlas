@@ -1,1 +1,4 @@
-pnpm exec fallow audit --base origin/main --format json --quiet
+set -e
+
+pnpm --filter @atlas/api test
+pnpm exec fallow audit --base origin/main --coverage apps/api/coverage/coverage-final.json --format json --quiet
