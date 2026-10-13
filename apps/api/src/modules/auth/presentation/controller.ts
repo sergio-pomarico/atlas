@@ -6,8 +6,16 @@ import type {
 import type { LogoutUserUseCase } from "@modules/auth/application/logout-usecase.ts";
 import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { ApiSuccessResponse } from "@shared/domain/response.ts";
-import type { NextFunction, Request, Response } from "express";
+import type { CookieOptions, NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
+
+const REFRESH_TOKEN_COOKIE_NAME = "refresh_token";
+const refreshTokenCookieOptions: CookieOptions = {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  path: "/api/auth",
+};
 
 @injectable()
 export class AuthController {
@@ -24,7 +32,7 @@ export class AuthController {
 
   login = async (
     req: Request<unknown, unknown, LoginPayload>,
-    res: Response<ApiSuccessResponse<LoginResult>>,
+    res: Response<ApiSuccessResponse<Pick<LoginResult, "accessToken">>>,
     next: NextFunction
   ) => {
     const userAgent = req.get("user-agent")?.trim();
@@ -39,10 +47,14 @@ export class AuthController {
       return;
     }
     const credentials = result.getData();
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, credentials.refreshToken, {
+      ...refreshTokenCookieOptions,
+      expires: credentials.refreshTokenExpiresAt,
+    });
     res.status(200).json({
       status: "success",
       message: "User logged in successfully",
-      data: credentials,
+      data: { accessToken: credentials.accessToken },
     });
   };
 

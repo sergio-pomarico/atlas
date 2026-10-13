@@ -33,14 +33,29 @@ describe("SessionRepositoryImpl integration", () => {
     await postgres?.stop();
   }, 60_000);
 
+  it("resolves a second-normalized expiration from the database clock", async () => {
+    const before = await databaseClock();
+    const result = await repository.resolveSessionExpiration(30);
+    const after = await databaseClock();
+
+    expect(result.isSuccess).toBe(true);
+    const expiresAt = result.getData();
+    expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
+      Math.floor(before.getTime() / 1000) * 1000 + 30 * 24 * 60 * 60 * 1000
+    );
+    expect(expiresAt.getTime()).toBeLessThanOrEqual(
+      Math.floor(after.getTime() / 1000) * 1000 + 30 * 24 * 60 * 60 * 1000
+    );
+    expect(expiresAt.getTime() % 1000).toBe(0);
+  });
+
   it("creates the first open session", async () => {
     const user = await createUser("first@example.com", "3010000001");
     const id = randomUUID();
+    const input = sessionInput(user.id, { id, userAgent: "test-agent" });
     const before = await databaseClock();
 
-    const result = await repository.replaceActiveSession(
-      sessionInput(user.id, { id, userAgent: "test-agent" })
-    );
+    const result = await repository.replaceActiveSession(input);
     const after = await databaseClock();
     const sessions = await postgres.prisma.session.findMany();
 
@@ -59,10 +74,7 @@ describe("SessionRepositoryImpl integration", () => {
     expect(sessions[0]?.createdAt.getTime()).toBeLessThanOrEqual(
       after.getTime()
     );
-    expect(
-      (sessions[0]?.expiresAt.getTime() as number) -
-        (sessions[0]?.createdAt.getTime() as number)
-    ).toBe(30 * 24 * 60 * 60 * 1000);
+    expect(sessions[0]?.expiresAt).toEqual(input.expiresAt);
   });
 
   it("revokes the previous session and preserves its history", async () => {
@@ -153,20 +165,34 @@ describe("SessionRepositoryImpl integration", () => {
   it.each([0, 1.5, 91])(
     "rejects invalid session TTL %p without changing data",
     async (sessionTtlDays) => {
-      const user = await createUser(
-        `ttl-${sessionTtlDays}@example.com`,
-        `30300000${String(sessionTtlDays).replace(".", "").padStart(2, "0")}`
-      );
-
-      const result = await repository.replaceActiveSession(
-        sessionInput(user.id, { sessionTtlDays })
-      );
+      const result = await repository.resolveSessionExpiration(sessionTtlDays);
 
       expect(result.isSuccess).toBe(false);
       expect(result.getError().statusCode).toBe(500);
       expect(await postgres.prisma.session.count()).toBe(0);
     }
   );
+
+  it("does not revoke the active session for an expired replacement", async () => {
+    const user = await createUser("stale@example.com", "3030000091");
+    const original = await repository.resolveSessionExpiration(30);
+    if (!original.isSuccess) {
+      throw original.getError();
+    }
+    await repository.replaceActiveSession(
+      sessionInput(user.id, { expiresAt: original.getData() })
+    );
+
+    const result = await repository.replaceActiveSession(
+      sessionInput(user.id, { expiresAt: new Date(0) })
+    );
+    const activeSessions = await postgres.prisma.session.count({
+      where: { userId: user.id, revokedAt: null },
+    });
+
+    expect(result.isSuccess).toBe(false);
+    expect(activeSessions).toBe(1);
+  });
 
   it("rechecks current user eligibility after waiting for the row lock", async () => {
     const user = await createUser("changed@example.com", "3010000007");
@@ -269,6 +295,11 @@ describe("SessionRepositoryImpl integration", () => {
     expect(
       await postgres.prisma.session.count({ where: { userId: user.id } })
     ).toBe(2);
+    const sessions = await postgres.prisma.session.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "asc" },
+    });
+    expect(sessions[0]?.revokedAt).toEqual(sessions[1]?.createdAt);
   });
 
   it("prevents two open sessions through direct inserts", async () => {
@@ -458,7 +489,7 @@ function sessionInput(
   overrides: {
     id?: string;
     userAgent?: string | null;
-    sessionTtlDays?: number;
+    expiresAt?: Date;
   } = {}
 ) {
   return {
@@ -466,6 +497,7 @@ function sessionInput(
     userId,
     ipAddress: "127.0.0.1",
     userAgent: overrides.userAgent ?? null,
-    sessionTtlDays: overrides.sessionTtlDays ?? 30,
+    expiresAt:
+      overrides.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
   };
 }

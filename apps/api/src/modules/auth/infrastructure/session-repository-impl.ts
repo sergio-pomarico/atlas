@@ -26,6 +26,7 @@ interface SessionValidityRow {
 }
 
 const millisecondsPerDay = 24 * 60 * 60 * 1000;
+const millisecondsPerSecond = 1000;
 
 function isSessionTtlValid(sessionTtlDays: number): boolean {
   return (
@@ -58,6 +59,12 @@ function mapSessionError(error: Error): AuthenticationError {
   return AuthenticationError.sessionReplacementFailed();
 }
 
+function normalizeToSecond(date: Date): Date {
+  return new Date(
+    Math.floor(date.getTime() / millisecondsPerSecond) * millisecondsPerSecond
+  );
+}
+
 @injectable()
 export class SessionRepositoryImpl implements SessionRepository {
   private readonly prismaService: PrismaService;
@@ -66,15 +73,36 @@ export class SessionRepositoryImpl implements SessionRepository {
     this.prismaService = prismaService;
   }
 
-  replaceActiveSession = async (
-    input: CreateSessionInput
-  ): Promise<Result<void, AuthenticationError>> => {
-    if (!isSessionTtlValid(input.sessionTtlDays)) {
+  resolveSessionExpiration = async (
+    sessionTtlDays: number
+  ): Promise<Result<Date, AuthenticationError>> => {
+    if (!isSessionTtlValid(sessionTtlDays)) {
       return Result.fail(
         AuthenticationError.sessionLifetimeConfigurationInvalid()
       );
     }
 
+    const result = await tryCatch<EffectiveTimeRow[], Error>(
+      this.prismaService.getClient().$queryRaw<EffectiveTimeRow[]>`
+        SELECT clock_timestamp() AS "effectiveNow"
+      `
+    );
+    const effectiveNow = result.isSuccess
+      ? result.getData()[0]?.effectiveNow
+      : null;
+    if (!effectiveNow) {
+      return Result.fail(AuthenticationError.sessionLifetimeResolutionFailed());
+    }
+
+    const sessionStartedAt = normalizeToSecond(effectiveNow);
+    return Result.success(
+      new Date(sessionStartedAt.getTime() + sessionTtlDays * millisecondsPerDay)
+    );
+  };
+
+  replaceActiveSession = async (
+    input: CreateSessionInput
+  ): Promise<Result<void, AuthenticationError>> => {
     const result = await tryCatch<void, Error>(
       this.prismaService.getClient().$transaction(async (transaction) => {
         const users = await transaction.$queryRaw<LockedUserRow[]>`
@@ -94,10 +122,9 @@ export class SessionRepositoryImpl implements SessionRepository {
         if (!time) {
           throw new Error("Database clock did not return a timestamp");
         }
-        const expiresAt = new Date(
-          time.effectiveNow.getTime() +
-            input.sessionTtlDays * millisecondsPerDay
-        );
+        if (input.expiresAt.getTime() <= time.effectiveNow.getTime()) {
+          throw new Error("Session expiration must be in the future");
+        }
 
         await transaction.session.updateMany({
           where: { userId: input.userId, revokedAt: null },
@@ -109,7 +136,7 @@ export class SessionRepositoryImpl implements SessionRepository {
             userId: input.userId,
             ipAddress: input.ipAddress,
             userAgent: input.userAgent,
-            expiresAt,
+            expiresAt: input.expiresAt,
             createdAt: time.effectiveNow,
           },
         });

@@ -6,7 +6,7 @@ export interface CreateSessionInput {
   userId: string;
   ipAddress: string;
   userAgent: string | null;
-  sessionTtlDays: number;
+  expiresAt: Date;
 }
 
 export interface SessionIdentity {
@@ -15,6 +15,9 @@ export interface SessionIdentity {
 }
 
 export interface SessionRepository {
+  resolveSessionExpiration: (
+    sessionTtlDays: number
+  ) => Promise<Result<Date, AuthenticationError>>;
   replaceActiveSession: (
     input: CreateSessionInput
   ) => Promise<Result<void, AuthenticationError>>;

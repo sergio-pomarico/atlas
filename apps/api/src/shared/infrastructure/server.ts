@@ -8,6 +8,7 @@ import { corsMiddleware } from "@shared/infrastructure/middlewares/cors.ts";
 import errorMiddleware from "@shared/infrastructure/middlewares/error.ts";
 import requestIDMiddleware from "@shared/infrastructure/middlewares/request-id.ts";
 import { AppRoutes } from "@shared/infrastructure/routes.ts";
+import cookieParser from "cookie-parser";
 import express, { type Application } from "express";
 
 export class Server {
@@ -26,6 +27,7 @@ export class Server {
     this.app.use(express.json());
     this.app.use(requestIDMiddleware);
     this.app.use(express.urlencoded({ extended: true }));
+    this.app.use(cookieParser());
     this.app.use("/api", new AppRoutes().router);
     this.app.use(errorMiddleware);
     this.http = createServer(this.app);

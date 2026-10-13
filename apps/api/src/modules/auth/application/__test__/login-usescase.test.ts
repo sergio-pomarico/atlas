@@ -19,6 +19,7 @@ const authRepository: jest.Mocked<AuthRepository> = {
   resetFailedLoginAttempts: jest.fn(),
 };
 const sessionRepository: jest.Mocked<SessionRepository> = {
+  resolveSessionExpiration: jest.fn(),
   replaceActiveSession: jest.fn(),
   validateActiveSession: jest.fn(),
   revokeActiveSession: jest.fn(),
@@ -66,6 +67,9 @@ describe("LoginUserUseCase", () => {
     );
     passwordHasher.compare.mockResolvedValue(true);
     jwtService.sign.mockResolvedValue("access-token");
+    sessionRepository.resolveSessionExpiration.mockResolvedValue(
+      Result.success(new Date("2026-01-31T00:00:00.000Z"))
+    );
     sessionRepository.replaceActiveSession.mockResolvedValue(
       Result.success(undefined)
     );
@@ -82,12 +86,17 @@ describe("LoginUserUseCase", () => {
     const result = await useCase.run(input);
 
     expect(result.isSuccess).toBe(true);
-    expect(result.getData()).toEqual({ accessToken: "access-token" });
+    expect(result.getData()).toEqual({
+      accessToken: "access-token",
+      refreshToken: "access-token",
+      refreshTokenExpiresAt: new Date("2026-01-31T00:00:00.000Z"),
+    });
     expect(authRepository.findByEmail).toHaveBeenCalledWith("test@example.com");
     expect(passwordHasher.compare).toHaveBeenCalledWith(
       "Password123!",
       "hashed-password"
     );
+    expect(sessionRepository.resolveSessionExpiration).toHaveBeenCalledWith(30);
     expect(sessionRepository.replaceActiveSession).toHaveBeenCalledTimes(1);
     const sessionInput = sessionRepository.replaceActiveSession.mock
       .calls[0]?.[0] as Parameters<
@@ -103,12 +112,21 @@ describe("LoginUserUseCase", () => {
       "access",
       { expiresIn: "5m" }
     );
+    expect(jwtService.sign).toHaveBeenCalledWith(
+      {
+        sub: "user-123",
+        scope: "refresh",
+        sid: sessionInput.id,
+        exp: 1_769_817_600,
+      },
+      "refresh"
+    );
     expect(sessionInput).toEqual({
       id: sessionInput.id,
       userId: "user-123",
       ipAddress: "127.0.0.1",
       userAgent: "Atlas test client",
-      sessionTtlDays: 30,
+      expiresAt: new Date("2026-01-31T00:00:00.000Z"),
     });
   });
 
@@ -221,6 +239,33 @@ describe("LoginUserUseCase", () => {
     expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
   });
 
+  it("does not replace the session when refresh token signing fails", async () => {
+    jwtService.sign
+      .mockResolvedValueOnce("access-token")
+      .mockResolvedValueOnce(null);
+
+    const result = await useCase.run(input);
+
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError().message).toBe("Token generation failed");
+    expect(jwtService.sign).toHaveBeenCalledTimes(2);
+    expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
+  });
+
+  it("does not sign tokens when resolving the session expiration fails", async () => {
+    const error = AuthenticationError.sessionLifetimeResolutionFailed();
+    sessionRepository.resolveSessionExpiration.mockResolvedValue(
+      Result.fail(error)
+    );
+
+    const result = await useCase.run(input);
+
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError()).toBe(error);
+    expect(jwtService.sign).not.toHaveBeenCalled();
+    expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
+  });
+
   it.each([null, ""])(
     "returns a controlled error when JWT signing returns %p",
     async (token) => {
@@ -255,6 +300,7 @@ describe("LoginUserUseCase", () => {
     expect(passwordHasher.compare).not.toHaveBeenCalled();
     expect(authRepository.increaseFailedLoginAttempts).not.toHaveBeenCalled();
     expect(authRepository.resetFailedLoginAttempts).not.toHaveBeenCalled();
+    expect(sessionRepository.resolveSessionExpiration).not.toHaveBeenCalled();
     expect(jwtService.sign).not.toHaveBeenCalled();
     expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
   }

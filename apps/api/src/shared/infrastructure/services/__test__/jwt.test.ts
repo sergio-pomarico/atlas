@@ -1,7 +1,9 @@
+import { generateKeyPairSync } from "node:crypto";
 import {
   ACCESS_TOKEN_AUDIENCE,
   ACCESS_TOKEN_ISSUER,
   type AccessToken,
+  type RefreshToken,
 } from "@atlas/schemas/lib/auth/token.ts";
 import {
   beforeAll,
@@ -31,11 +33,12 @@ jest.unstable_mockModule(
 
 let JWTService: JWTModule["JWTService"];
 let parseAccessToken: JWTModule["parseAccessToken"];
+let parseRefreshToken: JWTModule["parseRefreshToken"];
 const JWT_ALGORITHM = "RS256";
 
 describe("JWTService", () => {
   beforeAll(async () => {
-    ({ JWTService, parseAccessToken } = await import(
+    ({ JWTService, parseAccessToken, parseRefreshToken } = await import(
       "@shared/infrastructure/services/jwt.ts"
     ));
   });
@@ -129,9 +132,54 @@ describe("JWTService", () => {
       });
     const jwtService = JWTService.getInstance();
 
-    await jwtService.sign({ sub: "user-123", scope: "refresh" }, "refresh");
+    await jwtService.sign(
+      {
+        sub: "user-123",
+        scope: "refresh",
+        sid: "session-123",
+        exp: 1_893_456_000,
+      },
+      "refresh"
+    );
 
     expect(mockGetSecret).toHaveBeenCalledWith("refresh_key_private");
+  });
+
+  it("preserves the explicit refresh expiration when signing and verifying", async () => {
+    jest.restoreAllMocks();
+    const { privateKey, publicKey } = generateKeyPairSync("rsa", {
+      modulusLength: 2048,
+    });
+    const expiresAt = 1_893_456_000;
+    mockGetSecret.mockImplementation((key) =>
+      Promise.resolve({
+        secretValue: key.endsWith("private")
+          ? privateKey.export({ type: "pkcs1", format: "pem" }).toString()
+          : publicKey.export({ type: "pkcs1", format: "pem" }).toString(),
+      })
+    );
+    const jwtService = JWTService.getInstance();
+
+    const token = await jwtService.sign(
+      {
+        sub: "user-123",
+        scope: "refresh",
+        sid: "session-123",
+        exp: expiresAt,
+      },
+      "refresh"
+    );
+
+    expect(token).not.toBeNull();
+    expect(jwt.decode(token as string)).toMatchObject({
+      exp: expiresAt,
+      scope: "refresh",
+      sid: "session-123",
+      sub: "user-123",
+    });
+    await expect(
+      jwtService.verify(token as string, "refresh")
+    ).resolves.toMatchObject({ exp: expiresAt });
   });
 
   it("returns null when signing fails", async () => {
@@ -290,5 +338,25 @@ describe("JWTService", () => {
       iss: "atlas-api",
       aud: "atlas-client",
     });
+  });
+
+  it("accepts only complete refresh token claims", () => {
+    const token: RefreshToken = {
+      sub: "user-123",
+      scope: "refresh",
+      sid: "session-123",
+      iat: 1,
+      exp: 2,
+      iss: "atlas-api",
+      aud: "atlas-client",
+    };
+
+    expect(parseRefreshToken(token)).toEqual(token);
+    for (const claim of ["sub", "sid", "iat", "exp", "iss", "aud"] as const) {
+      expect(parseRefreshToken({ ...token, [claim]: undefined })).toBeNull();
+    }
+    expect(parseRefreshToken({ ...token, scope: "access" })).toBeNull();
+    expect(parseRefreshToken({ ...token, iss: "other-api" })).toBeNull();
+    expect(parseRefreshToken({ ...token, aud: "other-client" })).toBeNull();
   });
 });

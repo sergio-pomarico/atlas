@@ -64,6 +64,12 @@ export default class AuthenticationError extends AppError {
     );
   }
 
+  static refreshTokenGenerationFailed(): AuthenticationError {
+    return AuthenticationError.fromDefinition(
+      authenticationErrorCatalog.refreshTokenGenerationFailed
+    );
+  }
+
   static failedLoginAttemptsUpdateFailed(): AuthenticationError {
     return AuthenticationError.fromDefinition(
       authenticationErrorCatalog.failedLoginAttemptsUpdateFailed
@@ -85,6 +91,12 @@ export default class AuthenticationError extends AppError {
   static sessionLifetimeConfigurationInvalid(): AuthenticationError {
     return AuthenticationError.fromDefinition(
       authenticationErrorCatalog.sessionLifetimeConfigurationInvalid
+    );
+  }
+
+  static sessionLifetimeResolutionFailed(): AuthenticationError {
+    return AuthenticationError.fromDefinition(
+      authenticationErrorCatalog.sessionLifetimeResolutionFailed
     );
   }
 

@@ -14,6 +14,8 @@ import type { PasswordHasher } from "../domain/password-hasher.ts";
 
 export interface LoginResult {
   accessToken: string;
+  refreshToken: string;
+  refreshTokenExpiresAt: Date;
 }
 
 export interface LoginInput extends LoginPayload {
@@ -68,7 +70,14 @@ export class LoginUserUseCase {
       return Result.fail(resetResult.getError());
     }
     const sessionId = randomUUID();
-    const token = await tryCatch<string | null, JWTError>(
+    const expiration = await this.sessionRepository.resolveSessionExpiration(
+      this.sessionTtlDays
+    );
+    if (!expiration.isSuccess) {
+      return Result.fail(expiration.getError());
+    }
+    const expiresAt = expiration.getData();
+    const accessTokenResult = await tryCatch<string | null, JWTError>(
       this.jwtService.sign(
         {
           sub: user.id,
@@ -79,23 +88,45 @@ export class LoginUserUseCase {
         { expiresIn: "5m" }
       )
     );
-    if (!token.isSuccess) {
+    if (!accessTokenResult.isSuccess) {
       return Result.fail(AuthenticationError.accessTokenGenerationFailed());
     }
-    const accessToken = token.getData();
+    const accessToken = accessTokenResult.getData();
     if (!accessToken) {
       return Result.fail(AuthenticationError.accessTokenGenerationFailed());
+    }
+    const refreshTokenResult = await tryCatch<string | null, JWTError>(
+      this.jwtService.sign(
+        {
+          sub: user.id,
+          scope: "refresh",
+          sid: sessionId,
+          exp: expiresAt.getTime() / 1000,
+        },
+        "refresh"
+      )
+    );
+    if (!refreshTokenResult.isSuccess) {
+      return Result.fail(AuthenticationError.refreshTokenGenerationFailed());
+    }
+    const refreshToken = refreshTokenResult.getData();
+    if (!refreshToken) {
+      return Result.fail(AuthenticationError.refreshTokenGenerationFailed());
     }
     const sessionResult = await this.sessionRepository.replaceActiveSession({
       id: sessionId,
       userId: user.id,
       ipAddress: dto.ipAddress,
       userAgent: dto.userAgent,
-      sessionTtlDays: this.sessionTtlDays,
+      expiresAt,
     });
     if (!sessionResult.isSuccess) {
       return Result.fail(sessionResult.getError());
     }
-    return Result.success({ accessToken });
+    return Result.success({
+      accessToken,
+      refreshToken,
+      refreshTokenExpiresAt: expiresAt,
+    });
   };
 }
