@@ -64,6 +64,12 @@ export const authenticationErrorCatalog = Object.freeze({
     ErrorCode.INTERNAL_SERVER,
     500
   ),
+  refreshTokenValidationFailed: errorDefinition(
+    "Refresh token validation failed",
+    "An error occurred while validating the refresh token",
+    ErrorCode.INTERNAL_SERVER,
+    500
+  ),
   failedLoginAttemptsUpdateFailed: errorDefinition(
     "Failed login attempts update failed",
     "An error occurred while updating failed login attempts",

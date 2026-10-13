@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { LoginUserUseCase } from "@modules/auth/application/login-usecase.ts";
 import { LogoutUserUseCase } from "@modules/auth/application/logout-usecase.ts";
+import { RefreshAccessTokenUseCase } from "@modules/auth/application/refresh-access-token-usecase.ts";
 import type { PasswordHasher } from "@modules/auth/domain/password-hasher.ts";
 import type { AuthRepository } from "@modules/auth/domain/repository.ts";
 import type { SessionRepository } from "@modules/auth/domain/session-repository.ts";
@@ -21,6 +22,9 @@ authContainer.bind<LoginUserUseCase>("LoginUserUseCase").to(LoginUserUseCase);
 authContainer
   .bind<LogoutUserUseCase>("LogoutUserUseCase")
   .to(LogoutUserUseCase);
+authContainer
+  .bind<RefreshAccessTokenUseCase>("RefreshAccessTokenUseCase")
+  .to(RefreshAccessTokenUseCase);
 authContainer.bind<AuthMiddleware>("AuthMiddleware").to(AuthMiddleware);
 authContainer.bind<AuthRepository>("AuthRepository").to(AuthRepositoryImpl);
 authContainer

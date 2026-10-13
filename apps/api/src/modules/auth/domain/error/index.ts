@@ -70,6 +70,12 @@ export default class AuthenticationError extends AppError {
     );
   }
 
+  static refreshTokenValidationFailed(): AuthenticationError {
+    return AuthenticationError.fromDefinition(
+      authenticationErrorCatalog.refreshTokenValidationFailed
+    );
+  }
+
   static failedLoginAttemptsUpdateFailed(): AuthenticationError {
     return AuthenticationError.fromDefinition(
       authenticationErrorCatalog.failedLoginAttemptsUpdateFailed

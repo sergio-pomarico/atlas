@@ -4,6 +4,10 @@ import type {
   LoginUserUseCase,
 } from "@modules/auth/application/login-usecase.ts";
 import type { LogoutUserUseCase } from "@modules/auth/application/logout-usecase.ts";
+import type {
+  RefreshAccessTokenResult,
+  RefreshAccessTokenUseCase,
+} from "@modules/auth/application/refresh-access-token-usecase.ts";
 import AuthenticationError from "@modules/auth/domain/error/index.ts";
 import type { ApiSuccessResponse } from "@shared/domain/response.ts";
 import type { CookieOptions, NextFunction, Request, Response } from "express";
@@ -21,17 +25,26 @@ function clearRefreshTokenCookie(res: Response): void {
   res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, refreshTokenCookieOptions);
 }
 
+function readRefreshTokenCookie(req: Request): string | null {
+  const token: unknown = req.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
+  return typeof token === "string" && token.length > 0 ? token : null;
+}
+
 @injectable()
 export class AuthController {
   private readonly loginUserUseCase: LoginUserUseCase;
   private readonly logoutUserUseCase: LogoutUserUseCase;
+  private readonly refreshAccessTokenUseCase: RefreshAccessTokenUseCase;
 
   constructor(
     @inject("LoginUserUseCase") loginUserUseCase: LoginUserUseCase,
-    @inject("LogoutUserUseCase") logoutUserUseCase: LogoutUserUseCase
+    @inject("LogoutUserUseCase") logoutUserUseCase: LogoutUserUseCase,
+    @inject("RefreshAccessTokenUseCase")
+    refreshAccessTokenUseCase: RefreshAccessTokenUseCase
   ) {
     this.loginUserUseCase = loginUserUseCase;
     this.logoutUserUseCase = logoutUserUseCase;
+    this.refreshAccessTokenUseCase = refreshAccessTokenUseCase;
   }
 
   login = async (
@@ -59,6 +72,35 @@ export class AuthController {
       status: "success",
       message: "User logged in successfully",
       data: { accessToken: credentials.accessToken },
+    });
+  };
+
+  refresh = async (
+    req: Request,
+    res: Response<ApiSuccessResponse<RefreshAccessTokenResult>>,
+    next: NextFunction
+  ) => {
+    const refreshToken = readRefreshTokenCookie(req);
+    if (!refreshToken) {
+      clearRefreshTokenCookie(res);
+      next(AuthenticationError.unauthorized());
+      return;
+    }
+
+    const result = await this.refreshAccessTokenUseCase.run(refreshToken);
+    if (!result.isSuccess) {
+      const error = result.getError();
+      if (error.statusCode === 401) {
+        clearRefreshTokenCookie(res);
+      }
+      next(error);
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Access token refreshed successfully",
+      data: result.getData(),
     });
   };
 
