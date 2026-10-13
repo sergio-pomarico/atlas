@@ -1,22 +1,28 @@
 ---
 description: Create a pull request for the current branch
+agent: coder
 ---
 
 Create a pull request only from a published, non-protected work branch. `$ARGUMENTS`
-is optional PR context. `/make-commit` alone creates branches, stages, commits,
-and publishes; this command owns `gh`, base selection, the diff, draft, and PR.
+is optional PR context. When preparation is needed, read and follow
+`.opencode/commands/make-commit.md` within this same assignment for branch,
+commit, and publication work. An explicit PR request includes that necessary
+preparation, subject to the commit/push confirmations; PR creation still needs
+its separate confirmation. Return confirmation requests and resume context to
+orchestrator. This command owns `gh`, base selection, the diff, draft, and PR.
 
-## 1. Guard and delegate
+## 1. Guard and prepare
 
 Inspect `git branch --show-current`, `git status --short`, `git log --oneline -10`,
 `git rev-parse --symbolic-full-name '@{upstream}'`, and
 `git rev-list --left-right --count HEAD...@{upstream}` when an upstream exists.
 A blank branch is detached HEAD: stop. Treat exactly `main` and `master` as
 protected and never use either as a local or remote PR head. If a protected
-head has working-tree changes or local commits, delegate all branch/commit/
-publish work to `/make-commit`; if it is clean, stop. Likewise delegate when
+head has working-tree changes or local commits, apply the make-commit workflow
+in this assignment; if it is clean, stop. Likewise apply it when
 a work branch has working-tree changes, unpublished commits, or no upstream.
-After delegation, repeat this preflight and continue only with the same
+Do not launch another subagent or invoke slash commands through Bash.
+After preparation, repeat this preflight and continue only with the same
 verified, non-protected work branch and upstream. If the remote is ahead or
 divergent, stop without reconciliation.
 

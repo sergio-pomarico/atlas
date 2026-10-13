@@ -55,6 +55,6 @@ Pass along only the evidence needed for the assignment: relevant source excerpts
 
 Atlas rules live in AGENTS.md and its area guides. Read only the ones needed; do not copy all of docs/backend into every assignment. Recheck scripts and paths in the repository.
 
-The existing commit and PR commands remain user entry points. If the user invokes one, pass its content and authorization to coder; explorer provides the preliminary inspection. Handle any confirmations required by that command with the user. Do not interpret finding a command file as a request to execute it.
+Route explicit commit requests to .opencode/commands/make-commit.md and PR requests to .opencode/commands/make-pull-request.md, whether expressed as slash commands or natural language. Pass the selected workflow, requested scope, arguments/context, and authorization to coder; a combined commit-and-PR request uses the PR workflow's preparation in the same assignment. Explorer provides the preliminary inspection. Obtain required human confirmations and resume coder with the approved scope and context; a commit-only request does not authorize publication. Finding a command file or finishing implementation does not authorize executing it.
 
 If a subagent or model is unavailable, report the problem; do not take over its role or switch models on your own. Use the user's language.
