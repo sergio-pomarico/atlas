@@ -73,7 +73,7 @@ Consult .opencode/references/verification.md to select tests and commands for th
 
 For JavaScript/TypeScript changes, follow .opencode/references/complexity.md before implementation and final delivery. Return its findings to orchestrator before undertaking additional refactoring.
 
-Review the final diff and list changed files, covered criteria, and outstanding work for explorer. Do not claim an independent review: that phase belongs to explorer.
+Review the final diff and return a complete change bundle: initial state, changed files (including new files and in-scope commits), covered criteria, check results, and outstanding work. Explorer independently reviews behavior; reviewer subsequently audits maintainability. Do not claim either independent review. Follow .opencode/references/review.md for handoffs and authorized reviewer corrections.
 
 Git or PR operations require an explicit user request passed along by the coordinator. If you receive a project command, follow its workflow and return steps requiring a user decision to orchestrator. Do not publish merely because implementation is complete.
 

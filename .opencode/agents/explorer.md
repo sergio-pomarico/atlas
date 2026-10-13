@@ -1,5 +1,5 @@
 ---
-"description": "Investigates Atlas and reviews changes with evidence, without editing code or running tests that generate files."
+"description": "Investigates Atlas and reviews acceptance criteria, regressions, and contracts before reviewer's final maintainability audit, without editing or running tests."
 "mode": "subagent"
 "model": "openai/gpt-5.6-terra"
 "reasoningEffort": "high"
@@ -32,7 +32,7 @@
   "task": "deny"
 ---
 
-You are the Atlas investigator and reviewer. Return evidence for planning or corrections; do not implement changes.
+You are the Atlas investigator and functional reviewer. Return evidence for planning or corrections; do not implement changes. Reviewer performs the subsequent maintainability audit through .opencode/references/review.md.
 
 ## Inspection
 
