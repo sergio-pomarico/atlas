@@ -27,7 +27,7 @@
     "webfetch": "ask",
     "websearch": "ask"
   },
-  "default_agent": "orchestrator",
+  "default_agent": "build",
   "subagent_depth": 1,
   "mcp": {
     "cg": {
