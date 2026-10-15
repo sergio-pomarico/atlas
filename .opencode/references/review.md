@@ -2,7 +2,7 @@
 
 ## Responsibilities and trigger
 
-Orchestrator owns every assignment and decision. Explorer investigates and reviews behavior; coder implements and runs checks; reviewer performs the final maintainability audit. Read the original [SKILL.md](../skills/thermo-nuclear-code-quality-review/SKILL.md) directly for review criteria, output priorities, tone, and approval bar. Those instructions belong only in the skill.
+The primary Build agent owns every assignment and decision. Explorer investigates and reviews behavior; coder implements and runs checks; reviewer performs the final maintainability audit. Read the original [SKILL.md](../skills/thermo-nuclear-code-quality-review/SKILL.md) directly for review criteria, output priorities, tone, and approval bar. Those instructions belong only in the skill.
 
 Automatically invoke reviewer only after the entire agreed feature, fix, or refactor is implemented, coder has stopped editing and reported the applicable checks, and explorer's functional review is resolved. Do not launch it for individual implementation steps, questions, diagnoses, plans, or Git-only operations. An explicit maintainability review request may invoke it without implementing anything.
 
@@ -25,7 +25,7 @@ Use an incomplete verdict when the local SKILL.md/model is unavailable or missin
 
 ## User decision and correction loop
 
-Orchestrator presents the findings and proposed corrections before requesting a decision. Do not assign corrections originating from reviewer until the user authorizes their scope, including findings also expressed as Fallow complexity issues.
+Build presents the findings and proposed corrections before requesting a decision. Do not assign corrections originating from reviewer until the user authorizes their scope, including findings also expressed as Fallow complexity issues.
 
 | Decision | Next action |
 |---|---|
@@ -35,7 +35,7 @@ Orchestrator presents the findings and proposed corrections before requesting a 
 
 The user's authorization applies to the agreed correction scope; materially new proposals require another decision. Maintain the existing limit of two failed correction attempts for the same reason across the loop, rather than resetting it when a new review starts. At the limit, stop that loop and present evidence and alternatives.
 
-Changes to the reviewed implementation invalidate earlier verdicts. Orchestrator must return the updated result through the applicable checks and both reviews before final approval. Unavailable evidence or agents must be reported without pretending that the omitted phase passed. Reviews do not authorize commits, pushes, or PRs; retain the existing Git workflows and confirmations.
+Changes to the reviewed implementation invalidate earlier verdicts. Build must return the updated result through the applicable checks and both reviews before final approval. Unavailable evidence or agents must be reported without pretending that the omitted phase passed. Reviews do not authorize commits, pushes, or PRs; retain the existing Git workflows and confirmations.
 
 ## Skill reference
 

@@ -14,7 +14,7 @@ The client validates TypeScript through build; the root type-check does not repl
 
 In the API, Jest uses --passWithNoTests: a zero exit code does not prove that any tests ran. Check how many were executed. Docker/Testcontainers may be needed for integration and e2e tests; report an environment blocker as such. Do not replace the isolated test environment with a shared database.
 
-coder runs tests and builds and may produce coverage or generated artifacts; explorer reviews acceptance criteria, regressions, contracts, and those results. Once the complete implementation is stable and the functional review is resolved, reviewer audits maintainability following [review.md](review.md). Neither reviewer nor explorer runs tests/builds. If another run is needed, return the command and its purpose to orchestrator for coder.
+coder runs tests and builds and may produce coverage or generated artifacts; explorer reviews acceptance criteria, regressions, contracts, and those results. Once the complete implementation is stable and the functional review is resolved, reviewer audits maintainability following [review.md](review.md). Neither reviewer nor explorer runs tests/builds. If another run is needed, return the command and its purpose to the primary Build agent for coder.
 
 After authorized reviewer corrections, coder repeats the applicable checks, explorer repeats the functional review, and reviewer audits the updated complete result. Environment failures and missing evidence remain explicit limitations; a maintainability approval does not make unexecuted checks pass.
 
