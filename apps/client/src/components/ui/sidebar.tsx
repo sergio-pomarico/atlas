@@ -1,4 +1,4 @@
-import { cva, type VariantProps } from "class-variance-authority";
+// fallow-ignore-file unused-export
 import { cn } from "cn";
 import { PanelLeftIcon } from "lucide-react";
 import { Slot } from "radix-ui";
