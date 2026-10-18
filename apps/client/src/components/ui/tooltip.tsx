@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-export
 import { cn } from "cn";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
 import type { ComponentProps } from "react";

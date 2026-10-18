@@ -1,3 +1,4 @@
+// follow-ignore-file unused-export
 import { cn } from "cn";
 import type { ComponentProps } from "react";
 
