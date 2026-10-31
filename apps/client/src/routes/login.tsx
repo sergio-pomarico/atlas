@@ -23,12 +23,12 @@ function Login() {
   const showError = useUIStore((state) => state.showError);
   const { mutate } = useMutation<LoginResult, AuthServiceError, LoginPayload>({
     mutationFn: (values) => authService.login(values),
+    onError: (error) => showError(error.message),
     onSuccess: async ({ accessToken }) => {
       setAccessToken(accessToken);
       await router.invalidate();
-      await navigate({ to: "/dashboard" });
+      await navigate({ to: "/" });
     },
-    onError: (error) => showError(error.message),
   });
   const onSubmit = (values: LoginPayload) => mutate(values);
   return (
