@@ -101,18 +101,15 @@ describe("AuthenticationError factories", () => {
       ErrorCode.UNAUTHORIZED,
       401,
     ],
-  ])(
-    "creates the %s error contract",
-    (_name, error, message, description, code, statusCode) => {
-      expect(error).toBeInstanceOf(AuthenticationError);
-      expect(error).toMatchObject({
-        message,
-        error: { code, description },
-        status: "error",
-        statusCode,
-      });
-    }
-  );
+  ])("creates the %s error contract", (_name, error, message, description, code, statusCode) => {
+    expect(error).toBeInstanceOf(AuthenticationError);
+    expect(error).toMatchObject({
+      message,
+      error: { code, description },
+      status: "error",
+      statusCode,
+    });
+  });
 
   it("keeps the catalog and each definition immutable", () => {
     expect(Object.isFrozen(authenticationErrorCatalog)).toBe(true);

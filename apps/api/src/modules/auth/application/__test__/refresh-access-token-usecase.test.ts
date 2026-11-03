@@ -125,15 +125,15 @@ describe("RefreshAccessTokenUseCase", () => {
     expect(result.getError().message).toBe("Token generation failed");
   });
 
-  it.each([null, ""])(
-    "returns a controlled error when access signing returns %p",
-    async (token) => {
-      jwtService.sign.mockResolvedValue(token);
+  it.each([
+    null,
+    "",
+  ])("returns a controlled error when access signing returns %p", async (token) => {
+    jwtService.sign.mockResolvedValue(token);
 
-      const result = await useCase.run(refreshToken);
+    const result = await useCase.run(refreshToken);
 
-      expect(result.isSuccess).toBe(false);
-      expect(result.getError().statusCode).toBe(500);
-    }
-  );
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError().statusCode).toBe(500);
+  });
 });

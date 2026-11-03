@@ -175,33 +175,30 @@ describe("POST /api/auth/login e2e", () => {
   it.each([
     ["rejects", new Error("JWT failed")],
     ["returns null", null],
-  ])(
-    "does not create a session when JWT signing %s",
-    async (_label, failure) => {
-      const user = await context.createUser({
-        email: "jwt-failure@example.com",
-        password: "Password123!",
-        failedLoginAttempts: 3,
-      });
-      if (failure instanceof Error) {
-        context.mockJWTService.sign.mockRejectedValue(failure);
-      } else {
-        context.mockJWTService.sign.mockResolvedValue(failure);
-      }
-
-      const response = await request(context.app).post("/api/auth/login").send({
-        email: "jwt-failure@example.com",
-        password: "Password123!",
-      });
-      const updatedUser = await context.postgres.prisma.user.findUniqueOrThrow({
-        where: { id: user.id },
-      });
-
-      expect(response.status).toBe(500);
-      expect(updatedUser.failedLoginAttempts).toBe(0);
-      expect(await context.postgres.prisma.session.count()).toBe(0);
+  ])("does not create a session when JWT signing %s", async (_label, failure) => {
+    const user = await context.createUser({
+      email: "jwt-failure@example.com",
+      password: "Password123!",
+      failedLoginAttempts: 3,
+    });
+    if (failure instanceof Error) {
+      context.mockJWTService.sign.mockRejectedValue(failure);
+    } else {
+      context.mockJWTService.sign.mockResolvedValue(failure);
     }
-  );
+
+    const response = await request(context.app).post("/api/auth/login").send({
+      email: "jwt-failure@example.com",
+      password: "Password123!",
+    });
+    const updatedUser = await context.postgres.prisma.user.findUniqueOrThrow({
+      where: { id: user.id },
+    });
+
+    expect(response.status).toBe(500);
+    expect(updatedUser.failedLoginAttempts).toBe(0);
+    expect(await context.postgres.prisma.session.count()).toBe(0);
+  });
 
   it("rejects an inactive user without creating a session", async () => {
     await context.createUser({
