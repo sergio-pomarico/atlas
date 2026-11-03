@@ -10,9 +10,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { footerNavLinks, navGroups } from "./app-shared";
 import { LogoIcon } from "./logo";
 import { NavGroup } from "./nav-group";
-import { footerNavLinks, navGroups } from "./app-shared";
 
 export function AppSidebar() {
   const pathname = useRouterState({
@@ -41,9 +41,9 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarGroup>
-        {navGroups.map((group, index) => (
+        {navGroups.map((group) => (
           <NavGroup
-            key={`sidebar-group-${index}`}
+            key={`sidebar-group-${group.id}`}
             {...group}
             pathname={pathname}
           />

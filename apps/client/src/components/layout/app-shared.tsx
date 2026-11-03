@@ -1,16 +1,16 @@
-import type { ReactNode } from "react";
 import {
-  LayoutGridIcon,
+  ActivityIcon,
   BarChart3Icon,
-  ShoppingCartIcon,
+  CreditCardIcon,
   FileTextIcon,
-  UsersIcon,
+  HelpCircleIcon,
+  LayoutGridIcon,
   MegaphoneIcon,
   SettingsIcon,
-  CreditCardIcon,
-  HelpCircleIcon,
-  ActivityIcon,
+  ShoppingCartIcon,
+  UsersIcon,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
 export interface SidebarNavItem {
   title: string;
@@ -20,6 +20,7 @@ export interface SidebarNavItem {
 }
 
 export interface SidebarNavGroup {
+  id: string;
   label: string;
   items: SidebarNavItem[];
 }
@@ -27,6 +28,7 @@ export interface SidebarNavGroup {
 export const navGroups: SidebarNavGroup[] = [
   {
     label: "Overview",
+    id: "overview",
     items: [
       {
         title: "Dashboard",
@@ -42,6 +44,7 @@ export const navGroups: SidebarNavGroup[] = [
   },
   {
     label: "Store",
+    id: "store",
     items: [
       {
         title: "Orders",
@@ -77,6 +80,7 @@ export const navGroups: SidebarNavGroup[] = [
   },
   {
     label: "Administration",
+    id: "administration",
     items: [
       {
         title: "Settings",
