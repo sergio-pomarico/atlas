@@ -43,7 +43,7 @@ atlas/
 
 ### Prerrequisitos
 
-- Node.js >= 20.x
+- Node.js 24.x
 - pnpm >= 10.8.1
 
 ### Instalación
