@@ -76,7 +76,7 @@ vi.mock("@/router", () => ({
 }));
 
 import { AuthServiceError } from "@/services/auth-service";
-import { useAuthRefresh } from "../use-auth-refresh";
+import { isNonRetryableAuthError, useAuthRefresh } from "../use-auth-refresh";
 
 function unauthorized() {
   return {
@@ -114,6 +114,20 @@ describe("useAuthRefresh", () => {
 
     await expect(mocks.onRejected(unauthorized())).rejects.toBe(replayError);
     expect(mocks.clearSession).not.toHaveBeenCalled();
+  });
+
+  it("classifies unauthorized and failed refresh errors as non-retryable", async () => {
+    const refreshError = new Error("Refresh failed");
+    mocks.refreshAccessToken.mockRejectedValue(refreshError);
+
+    const failedRefresh = await mocks
+      .onRejected(unauthorized())
+      .catch((error: unknown) => error);
+
+    expect(failedRefresh).toMatchObject({ name: "RefreshAccessTokenError" });
+    expect(isNonRetryableAuthError(unauthorized())).toBe(true);
+    expect(isNonRetryableAuthError(failedRefresh)).toBe(true);
+    expect(isNonRetryableAuthError(new Error("Network failed"))).toBe(false);
   });
 
   it("clears the session for an invalid refresh", async () => {
