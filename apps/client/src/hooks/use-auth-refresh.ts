@@ -29,7 +29,7 @@ export function useAuthRefresh() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    let refreshRequest: Promise<void> | null = null;
+    let refreshRequest: Promise<string> | null = null;
     const interceptorId = apiClient.interceptors.response.use(
       undefined,
       async (error) => {
@@ -59,12 +59,22 @@ export function useAuthRefresh() {
         refreshRequest ??= authService
           .refreshAccessToken()
           .then(({ accessToken: refreshedAccessToken }) => {
+            if (useAuthStore.getState().accessToken !== accessToken) {
+              throw new RefreshAccessTokenError(
+                new Error("Session changed while refreshing the access token.")
+              );
+            }
             useAuthStore.getState().setAccessToken(refreshedAccessToken);
+            return refreshedAccessToken;
           })
           .catch(async (refreshError) => {
+            if (refreshError instanceof RefreshAccessTokenError) {
+              throw refreshError;
+            }
             if (
               refreshError instanceof AuthServiceError &&
-              [401, 403].includes(refreshError.status ?? 0)
+              [401, 403].includes(refreshError.status ?? 0) &&
+              useAuthStore.getState().accessToken === accessToken
             ) {
               useAuthStore.getState().clearSession();
               queryClient.clear();
@@ -77,7 +87,10 @@ export function useAuthRefresh() {
             refreshRequest = null;
           });
 
-        await refreshRequest;
+        const refreshedAccessToken = await refreshRequest;
+        if (useAuthStore.getState().accessToken !== refreshedAccessToken) {
+          throw error;
+        }
         return apiClient.request(config);
       }
     );

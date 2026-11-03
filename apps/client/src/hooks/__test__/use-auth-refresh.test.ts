@@ -131,4 +131,87 @@ describe("useAuthRefresh", () => {
       to: "/login",
     });
   });
+
+  it("does not save a refreshed token after the session is cleared", async () => {
+    let resolveRefresh: (value: { accessToken: string }) => void = () => {
+      throw new Error("Refresh resolver was not initialized.");
+    };
+    mocks.refreshAccessToken.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        })
+    );
+
+    const request = mocks.onRejected(unauthorized());
+    mocks.clearSession();
+    resolveRefresh({ accessToken: "new-token" });
+
+    await expect(request).rejects.toMatchObject({
+      name: "RefreshAccessTokenError",
+    });
+    expect(mocks.setAccessToken).not.toHaveBeenCalled();
+    expect(mocks.request).not.toHaveBeenCalled();
+    expect(mocks.clearQueryCache).not.toHaveBeenCalled();
+  });
+
+  it("does not save a refreshed token after a new login", async () => {
+    let resolveRefresh: (value: { accessToken: string }) => void = () => {
+      throw new Error("Refresh resolver was not initialized.");
+    };
+    mocks.refreshAccessToken.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveRefresh = resolve;
+        })
+    );
+
+    const request = mocks.onRejected(unauthorized());
+    mocks.setToken("new-login-token");
+    resolveRefresh({ accessToken: "new-token" });
+
+    await expect(request).rejects.toMatchObject({
+      name: "RefreshAccessTokenError",
+    });
+    expect(mocks.setAccessToken).not.toHaveBeenCalled();
+    expect(mocks.request).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    401, 403,
+  ])("does not clear a new session when an old refresh returns %i", async (status) => {
+    let rejectRefresh: (reason: unknown) => void = () => {
+      throw new Error("Refresh rejecter was not initialized.");
+    };
+    mocks.refreshAccessToken.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectRefresh = reject;
+        })
+    );
+
+    const request = mocks.onRejected(unauthorized());
+    mocks.setToken("new-login-token");
+    rejectRefresh(new AuthServiceError({ message: "Session expired", status }));
+
+    await expect(request).rejects.toMatchObject({
+      name: "RefreshAccessTokenError",
+    });
+    expect(mocks.clearSession).not.toHaveBeenCalled();
+    expect(mocks.clearQueryCache).not.toHaveBeenCalled();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
+  it("does not replay after the session token changes during refresh", async () => {
+    mocks.setAccessToken.mockImplementationOnce((token: string) => {
+      mocks.setToken(token);
+      mocks.setToken("new-login-token");
+    });
+
+    await expect(mocks.onRejected(unauthorized())).rejects.toMatchObject({
+      response: { status: 401 },
+    });
+    expect(mocks.request).not.toHaveBeenCalled();
+    expect(mocks.clearQueryCache).not.toHaveBeenCalled();
+  });
 });
