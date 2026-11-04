@@ -116,6 +116,16 @@ describe("useAuthRefresh", () => {
     expect(mocks.clearSession).not.toHaveBeenCalled();
   });
 
+  it.each([
+    new Error("Network failed"),
+    { config: {}, isAxiosError: true, response: { status: 500 } },
+    { isAxiosError: true, response: { status: 401 } },
+  ])("propagates errors that cannot be refreshed", async (error) => {
+    await expect(mocks.onRejected(error)).rejects.toBe(error);
+    expect(mocks.refreshAccessToken).not.toHaveBeenCalled();
+    expect(mocks.request).not.toHaveBeenCalled();
+  });
+
   it("classifies unauthorized and failed refresh errors as non-retryable", async () => {
     const refreshError = new Error("Refresh failed");
     mocks.refreshAccessToken.mockRejectedValue(refreshError);

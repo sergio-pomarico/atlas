@@ -10,6 +10,14 @@ type RetryableConfig = AxiosRequestConfig & {
   _hasRetriedAfterRefresh?: boolean;
 };
 
+function getRefreshableRequestConfig(error: unknown): RetryableConfig | null {
+  if (!isAxiosError(error) || error.response?.status !== 401 || !error.config) {
+    return null;
+  }
+
+  return error.config as RetryableConfig;
+}
+
 class RefreshAccessTokenError extends Error {
   constructor(cause: unknown) {
     super("Unable to refresh the access token.", { cause });
@@ -33,15 +41,11 @@ export function useAuthRefresh() {
     const interceptorId = apiClient.interceptors.response.use(
       undefined,
       async (error) => {
-        if (
-          !isAxiosError(error) ||
-          error.response?.status !== 401 ||
-          !error.config
-        ) {
+        const config = getRefreshableRequestConfig(error);
+        if (!config) {
           throw error;
         }
 
-        const config = error.config as RetryableConfig;
         const accessToken = useAuthStore.getState().accessToken;
         if (!accessToken || config._hasRetriedAfterRefresh) {
           throw error;
