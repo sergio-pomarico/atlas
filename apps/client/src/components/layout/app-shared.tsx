@@ -113,12 +113,3 @@ export const footerNavLinks: SidebarNavItem[] = [
     icon: <ActivityIcon />,
   },
 ];
-
-export const navLinks: SidebarNavItem[] = [
-  ...navGroups.flatMap((group) =>
-    group.items.flatMap((item) =>
-      item.subItems?.length ? [item, ...item.subItems] : [item]
-    )
-  ),
-  ...footerNavLinks,
-];
