@@ -250,18 +250,26 @@ function DropdownMenuSubContent({
 
 export {
   DropdownMenu,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuPortal,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuRadioGroup,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuShortcut,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuSub,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuSubContent,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 };

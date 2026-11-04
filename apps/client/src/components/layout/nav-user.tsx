@@ -1,4 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import {
   BellIcon,
@@ -19,6 +19,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { authService } from "@/services/auth-service";
+import { useAuthStore } from "@/stores/auth-store";
 
 const user = {
   avatar: "https://github.com/shabanhr.png",
@@ -26,20 +28,21 @@ const user = {
   name: "Shaban Haider",
 };
 
-import { useAuthStore } from "@/stores/auth-store";
-
 export function NavUser() {
   const clearSession = useAuthStore((state) => state.clearSession);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const router = useRouter();
 
-  const handleLogout = async () => {
-    clearSession();
-    queryClient.clear();
-    await router.invalidate();
-    await navigate({ replace: true, to: "/login" });
-  };
+  const { isPending, mutate } = useMutation({
+    mutationFn: authService.logout,
+    onSettled: async () => {
+      clearSession();
+      queryClient.clear();
+      await router.invalidate();
+      await navigate({ replace: true, to: "/login" });
+    },
+  });
 
   return (
     <DropdownMenu>
@@ -104,7 +107,8 @@ export function NavUser() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem
-            onClick={() => handleLogout()}
+            disabled={isPending}
+            onClick={() => mutate()}
             variant="destructive"
           >
             <LogOutIcon />

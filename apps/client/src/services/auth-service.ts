@@ -1,5 +1,6 @@
 import type { LoginPayload } from "@atlas/schemas/lib/auth/login.ts";
 import { isAxiosError } from "axios";
+import { apiClient } from "@/shared/axios/api-client";
 import { HTTPClient, type HTTPClientConfig } from "@/shared/axios/axios";
 import { buildConfig } from "@/shared/axios/config";
 
@@ -71,6 +72,27 @@ export class AuthService {
       >("/auth/login", payload);
       const { accessToken } = result.data;
       return { accessToken };
+    } catch (error) {
+      throw AuthServiceError.from(error);
+    }
+  }
+
+  async refreshAccessToken(): Promise<LoginResult> {
+    try {
+      const { data: result } = await this.httpClient.post<
+        LoginSuccessResponse,
+        undefined
+      >("/auth/refresh", undefined);
+      const { accessToken } = result.data;
+      return { accessToken };
+    } catch (error) {
+      throw AuthServiceError.from(error);
+    }
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await apiClient.delete("/auth/logout");
     } catch (error) {
       throw AuthServiceError.from(error);
     }

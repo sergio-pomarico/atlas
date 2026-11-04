@@ -162,16 +162,15 @@ describe("SessionRepositoryImpl integration", () => {
     expect(result.getError().statusCode).toBe(404);
   });
 
-  it.each([0, 1.5, 91])(
-    "rejects invalid session TTL %p without changing data",
-    async (sessionTtlDays) => {
-      const result = await repository.resolveSessionExpiration(sessionTtlDays);
+  it.each([
+    0, 1.5, 91,
+  ])("rejects invalid session TTL %p without changing data", async (sessionTtlDays) => {
+    const result = await repository.resolveSessionExpiration(sessionTtlDays);
 
-      expect(result.isSuccess).toBe(false);
-      expect(result.getError().statusCode).toBe(500);
-      expect(await postgres.prisma.session.count()).toBe(0);
-    }
-  );
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError().statusCode).toBe(500);
+    expect(await postgres.prisma.session.count()).toBe(0);
+  });
 
   it("does not revoke the active session for an expired replacement", async () => {
     const user = await createUser("stale@example.com", "3030000091");
@@ -239,34 +238,29 @@ describe("SessionRepositoryImpl integration", () => {
     ["inactive", UserStatus.INACTIVE, true, "3020000001"],
     ["blocked", UserStatus.BLOCKED, true, "3020000002"],
     ["unverified", UserStatus.ACTIVE, false, "3020000003"],
-  ])(
-    "does not change sessions for a currently %s user",
-    async (_label, status, verified, phone) => {
-      const user = await createUser(`${_label}@example.com`, phone, {
-        status,
-        verified,
-      });
-      const original = await postgres.prisma.session.create({
-        data: {
-          userId: user.id,
-          ipAddress: "127.0.0.1",
-          expiresAt: new Date("2026-10-01T00:00:00.000Z"),
-        },
-      });
+  ])("does not change sessions for a currently %s user", async (_label, status, verified, phone) => {
+    const user = await createUser(`${_label}@example.com`, phone, {
+      status,
+      verified,
+    });
+    const original = await postgres.prisma.session.create({
+      data: {
+        userId: user.id,
+        ipAddress: "127.0.0.1",
+        expiresAt: new Date("2026-10-01T00:00:00.000Z"),
+      },
+    });
 
-      const result = await repository.replaceActiveSession(
-        sessionInput(user.id)
-      );
-      const persisted = await postgres.prisma.session.findUniqueOrThrow({
-        where: { id: original.id },
-      });
+    const result = await repository.replaceActiveSession(sessionInput(user.id));
+    const persisted = await postgres.prisma.session.findUniqueOrThrow({
+      where: { id: original.id },
+    });
 
-      expect(result.isSuccess).toBe(false);
-      expect(result.getError().statusCode).toBe(403);
-      expect(persisted.revokedAt).toBeNull();
-      expect(await postgres.prisma.session.count()).toBe(1);
-    }
-  );
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError().statusCode).toBe(403);
+    expect(persisted.revokedAt).toBeNull();
+    expect(await postgres.prisma.session.count()).toBe(1);
+  });
 
   it("serializes replacements that are waiting on the same user lock", async () => {
     const user = await createUser("concurrent@example.com", "3010000007");

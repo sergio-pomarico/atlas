@@ -34,16 +34,13 @@ describe("AuthMiddleware", () => {
       { sub: "user", email: "test@example.com", scope: "access", sid: 1 },
     ],
     ["token", { sub: "user", email: "test@example.com", scope: "refresh" }],
-  ])(
-    "rejects missing, invalid, or malformed access tokens",
-    async (authorization, payload) => {
-      jwtService.verify.mockResolvedValue(payload);
-      const { next, req } = await run(authorization);
-      expect(next).toHaveBeenCalledWith(expect.any(AuthenticationError));
-      expect(next).toHaveBeenCalledTimes(1);
-      expect(req.auth).toBeUndefined();
-    }
-  );
+  ])("rejects missing, invalid, or malformed access tokens", async (authorization, payload) => {
+    jwtService.verify.mockResolvedValue(payload);
+    const { next, req } = await run(authorization);
+    expect(next).toHaveBeenCalledWith(expect.any(AuthenticationError));
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(req.auth).toBeUndefined();
+  });
 
   it("propagates repository failures and does not continue", async () => {
     jwtService.verify.mockResolvedValue(accessToken());

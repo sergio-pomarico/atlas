@@ -266,21 +266,21 @@ describe("LoginUserUseCase", () => {
     expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
   });
 
-  it.each([null, ""])(
-    "returns a controlled error when JWT signing returns %p",
-    async (token) => {
-      jwtService.sign.mockResolvedValue(token);
+  it.each([
+    null,
+    "",
+  ])("returns a controlled error when JWT signing returns %p", async (token) => {
+    jwtService.sign.mockResolvedValue(token);
 
-      const result = await useCase.run(input);
+    const result = await useCase.run(input);
 
-      expect(result.isSuccess).toBe(false);
-      expect(result.getError().message).toBe("Token generation failed");
-      expect(authRepository.resetFailedLoginAttempts).toHaveBeenCalledWith(
-        "user-123"
-      );
-      expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
-    }
-  );
+    expect(result.isSuccess).toBe(false);
+    expect(result.getError().message).toBe("Token generation failed");
+    expect(authRepository.resetFailedLoginAttempts).toHaveBeenCalledWith(
+      "user-123"
+    );
+    expect(sessionRepository.replaceActiveSession).not.toHaveBeenCalled();
+  });
 
   it("does not return the signed token when session replacement fails", async () => {
     const error = AuthenticationError.sessionReplacementFailed();

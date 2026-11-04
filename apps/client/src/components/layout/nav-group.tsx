@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -14,7 +15,6 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import type { SidebarNavGroup } from "./app-shared";
-import { ChevronRightIcon } from "lucide-react";
 
 export function NavGroup({
   label,

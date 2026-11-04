@@ -24,23 +24,29 @@ describe("envConfig", () => {
     expect(envConfig({}).sessionTtlDays).toBe(30);
   });
 
-  it.each(["1", "30", "90"])(
-    "accepts SESSION_TTL_DAYS=%s",
-    (sessionTtlDays) => {
-      expect(
-        envConfig({ SESSION_TTL_DAYS: sessionTtlDays }).sessionTtlDays
-      ).toBe(Number(sessionTtlDays));
-    }
-  );
+  it.each([
+    "1",
+    "30",
+    "90",
+  ])("accepts SESSION_TTL_DAYS=%s", (sessionTtlDays) => {
+    expect(envConfig({ SESSION_TTL_DAYS: sessionTtlDays }).sessionTtlDays).toBe(
+      Number(sessionTtlDays)
+    );
+  });
 
-  it.each(["", "0", "-1", "1.5", "30days", "91", "9007199254740992"])(
-    "rejects invalid SESSION_TTL_DAYS=%s",
-    (sessionTtlDays) => {
-      expect(() => envConfig({ SESSION_TTL_DAYS: sessionTtlDays })).toThrow(
-        "SESSION_TTL_DAYS must be an integer between 1 and 90"
-      );
-    }
-  );
+  it.each([
+    "",
+    "0",
+    "-1",
+    "1.5",
+    "30days",
+    "91",
+    "9007199254740992",
+  ])("rejects invalid SESSION_TTL_DAYS=%s", (sessionTtlDays) => {
+    expect(() => envConfig({ SESSION_TTL_DAYS: sessionTtlDays })).toThrow(
+      "SESSION_TTL_DAYS must be an integer between 1 and 90"
+    );
+  });
 
   it("does not throw when the local env file is missing", () => {
     const missingEnvFile = path.join(tmpdir(), "atlas-missing.env");
