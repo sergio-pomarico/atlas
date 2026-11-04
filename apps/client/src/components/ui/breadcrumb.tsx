@@ -107,10 +107,13 @@ function BreadcrumbEllipsis({ className, ...props }: ComponentProps<"span">) {
 
 export {
   Breadcrumb,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   BreadcrumbEllipsis,
   BreadcrumbItem,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   BreadcrumbSeparator,
 };

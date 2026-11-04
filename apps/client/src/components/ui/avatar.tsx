@@ -98,9 +98,12 @@ function AvatarGroupCount({ className, ...props }: ComponentProps<"div">) {
 
 export {
   Avatar,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   AvatarBadge,
   AvatarFallback,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   AvatarGroup,
+  // fallow-ignore-next-line unused-export -- Reserved shadcn component for future use.
   AvatarGroupCount,
   AvatarImage,
 };
