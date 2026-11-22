@@ -2,12 +2,13 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const __dirname = import.meta.dirname;
-const localEnvFilePath = path.resolve(__dirname, "../../../.env");
+const localEnvFilePath = path.resolve(import.meta.dirname, "../../../.env");
 const defaultCorsOrigin = "http://localhost:5173";
 const sessionTtlDaysPattern = /^(?:[1-9]|[1-8]\d|90)$/;
 
-loadLocalEnvFile();
+if (import.meta.filename.endsWith(".ts")) {
+  loadLocalEnvFile();
+}
 
 export const envConfig = (env: NodeJS.ProcessEnv = process.env) => {
   const environment = resolveEnvironment(env);
