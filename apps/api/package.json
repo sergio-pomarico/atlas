@@ -2,9 +2,12 @@
   "name": "@atlas/api",
   "version": "1.0.0",
   "main": "dist/app.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "type-check": "tsc --noEmit",
-    "build": "tsc --project tsconfig.json && tsc-alias",
+    "build": "rolldown -c rolldown.config.mjs",
     "dev": "NODE_ENV=dev tsx watch --no-warnings -r tsconfig-paths/register src/app.ts",
     "start": "NODE_ENV=prod node ./dist/app.js",
     "db:generate": "tsx -r tsconfig-paths/register helpers/scripts/migrate.ts generate",
@@ -51,11 +54,11 @@
     "@types/supertest": "^7.2.0",
     "jest": "^30.3.0",
     "prisma": "^7.4.0",
+    "rolldown": "1.3.3",
     "supertest": "^7.2.2",
     "testcontainers": "^12.0.1",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
