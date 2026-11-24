@@ -35,51 +35,120 @@ const optionsWithInlineValue = new Set([
   "--list-cmds",
 ]);
 
+interface TokenizerState {
+  tokens: string[];
+  token: string | undefined;
+  quote: "'" | '"' | undefined;
+  escaped: boolean;
+}
+
+function flushToken(state: TokenizerState): void {
+  if (state.token === undefined) {
+    return;
+  }
+  state.tokens.push(state.token);
+  state.token = undefined;
+}
+
+function beginToken(state: TokenizerState): string {
+  if (state.token === undefined) {
+    state.token = "";
+  }
+  return state.token;
+}
+
+function isQuote(char: string): char is "'" | '"' {
+  return char === "'" || char === '"';
+}
+
+function isEscape(char: string, quote: TokenizerState["quote"]): boolean {
+  return char === "\\" && quote !== "'";
+}
+
+function consumeQuotedCharacter(state: TokenizerState, char: string): void {
+  if (char === state.quote) {
+    state.quote = undefined;
+  } else {
+    state.token = `${state.token ?? ""}${char}`;
+  }
+}
+
+function consumeUnquotedCharacter(state: TokenizerState, char: string): void {
+  if (isQuote(char)) {
+    state.quote = char;
+    beginToken(state);
+    return;
+  }
+  if (whitespace.test(char)) {
+    flushToken(state);
+    return;
+  }
+  state.token = `${beginToken(state)}${char}`;
+}
+
+function consumeCharacter(state: TokenizerState, char: string): void {
+  if (state.escaped) {
+    state.token = `${beginToken(state)}${char}`;
+    state.escaped = false;
+    return;
+  }
+  if (isEscape(char, state.quote)) {
+    state.escaped = true;
+    beginToken(state);
+    return;
+  }
+  if (state.quote) {
+    consumeQuotedCharacter(state, char);
+    return;
+  }
+  consumeUnquotedCharacter(state, char);
+}
+
 function tokenize(resource: string): string[] {
-  const tokens: string[] = [];
-  let token = "";
-  let started = false;
-  let quote: "'" | '"' | undefined;
-  let escaped = false;
+  const state: TokenizerState = {
+    tokens: [],
+    token: undefined,
+    quote: undefined,
+    escaped: false,
+  };
 
   for (const char of resource) {
-    if (escaped) {
-      token += char;
-      escaped = false;
-    } else if (char === "\\" && quote !== "'") {
-      escaped = true;
-      started = true;
-    } else if (quote) {
-      if (char === quote) {
-        quote = undefined;
-      } else {
-        token += char;
-      }
-    } else if (char === "'" || char === '"') {
-      quote = char;
-      started = true;
-    } else if (whitespace.test(char)) {
-      if (started) {
-        tokens.push(token);
-        token = "";
-        started = false;
-      }
-    } else {
-      token += char;
-      started = true;
-    }
+    consumeCharacter(state, char);
   }
-  if (escaped) {
-    token += "\\";
+  if (state.escaped) {
+    state.token = `${state.token ?? ""}\\`;
   }
-  if (started) {
-    tokens.push(token);
-  }
-  return tokens;
+  flushToken(state);
+  return state.tokens;
 }
 
 function executableName(token: string | undefined): string | undefined {
   return token?.slice(token.lastIndexOf("/") + 1);
+}
+
+const inlineOptionPrefixes = [...optionsWithInlineValue].map(
+  (option) => `${option}=`
+);
+const exactOptionAdvances = new Map([
+  ...[...globalFlags].map((option) => [option, 1] as const),
+  ...[...optionsWithValue].map((option) => [option, 2] as const),
+]);
+
+function hasInlineValue(option: string): boolean {
+  return inlineOptionPrefixes.some((prefix) => option.startsWith(prefix));
+}
+
+function hasAttachedShortValue(option: string): boolean {
+  return (
+    option.length > 2 && (option.startsWith("-C") || option.startsWith("-c"))
+  );
+}
+
+function optionAdvance(option: string): number | undefined {
+  return (
+    exactOptionAdvances.get(option) ??
+    (hasInlineValue(option) || hasAttachedShortValue(option) ? 1 : undefined)
+  );
 }
 
 function gitSubcommand(
@@ -88,25 +157,31 @@ function gitSubcommand(
   let index = 1;
   while (index < tokens.length) {
     const option = tokens[index];
-    if (globalFlags.has(option)) {
-      index += 1;
-    } else if (optionsWithValue.has(option)) {
-      index += 2;
-    } else if (
-      [...optionsWithInlineValue].some(
-        (name) =>
-          option.startsWith(`${name}=`) && option.length >= name.length + 1
-      ) ||
-      (option.startsWith("-C") && option.length > 2) ||
-      (option.startsWith("-c") && option.length > 2)
-    ) {
-      index += 1;
-    } else if (option.startsWith("-")) {
-      return;
-    } else {
+    if (!option.startsWith("-")) {
       return { name: option, index };
     }
+    const advance = optionAdvance(option);
+    if (advance === undefined) {
+      return;
+    }
+    index += advance;
   }
+}
+
+const blockedSubcommands = new Set(["reset", "clean", "restore"]);
+
+function isBlockedSubcommand(
+  tokens: string[],
+  command: { name: string; index: number }
+): boolean {
+  if (blockedSubcommands.has(command.name)) {
+    return true;
+  }
+  if (command.name !== "checkout") {
+    return false;
+  }
+  const separator = tokens.indexOf("--", command.index + 1);
+  return separator >= 0 && separator < tokens.length - 1;
 }
 
 function matchesBlockedGitInvocation(tokens: string[]): boolean {
@@ -117,18 +192,7 @@ function matchesBlockedGitInvocation(tokens: string[]): boolean {
   if (!command) {
     return false;
   }
-  if (
-    command.name === "reset" ||
-    command.name === "clean" ||
-    command.name === "restore"
-  ) {
-    return true;
-  }
-  if (command.name !== "checkout") {
-    return false;
-  }
-  const separator = tokens.indexOf("--", command.index + 1);
-  return separator >= 0 && separator < tokens.length - 1;
+  return isBlockedSubcommand(tokens, command);
 }
 
 export function invokesBlockedGitCommand(resource: string): boolean {

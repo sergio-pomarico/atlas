@@ -10,11 +10,14 @@ test("blocks reset, clean, and restore regardless of flags", () => {
     "git reset",
     "git reset --hard",
     "git reset --soft HEAD~1",
+    "git -C /repo reset --soft HEAD",
+    'git -C "a\\" b" reset --hard',
     'git -C "" reset --hard',
     "git -C/repo -cuser.name=Atlas reset --hard",
     "git -P reset --hard",
     "git -p clean -fd",
     "git clean",
+    "git clean -n",
     "git clean -fd",
     "git clean -nfd",
     "git restore file",
@@ -49,6 +52,7 @@ test("does not block allowed checkout forms or empty separators", () => {
   for (const resource of [
     "git checkout",
     "git checkout main",
+    "git -C /repo checkout other",
     "git checkout -b feature",
     "git checkout --detach HEAD",
     "git checkout --",
@@ -61,6 +65,7 @@ test("does not block allowed checkout forms or empty separators", () => {
 test("does not treat mentions, option values, or other executables as git calls", () => {
   for (const resource of [
     'printf "git checkout -- file"',
+    "printf '%s\\n' 'git reset --hard'",
     "echo git reset --hard",
     "diff --git a/file b/file",
     "printf '%s' -- git checkout -- file",
