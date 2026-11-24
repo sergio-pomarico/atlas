@@ -19,9 +19,7 @@
       "git reset --hard*": "deny",
       "git clean *": "deny",
       "git checkout -- *": "deny",
-      "git restore *": "deny",
-      "git push --force*": "deny",
-      "git push -f*": "deny"
+      "git restore *": "deny"
     },
     "external_directory": "deny",
     "webfetch": "ask",

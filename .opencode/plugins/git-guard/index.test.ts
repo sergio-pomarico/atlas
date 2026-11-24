@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
+import plugin, {
   invokesBlockedGitCommand,
   shouldDenyShellEvaluation,
 } from "./index.ts";
@@ -81,6 +81,62 @@ test("does not treat mentions, option values, or other executables as git calls"
   }
 });
 
+test("blocks direct force-push options and grouped -f regardless of position", () => {
+  for (const resource of [
+    "git push -f",
+    "git push -ff",
+    "git push -fuf origin main",
+    "git push --force",
+    "git push --force-with-lease",
+    "git push --force-with-lease=main:abc123",
+    "git push --force=value origin main",
+    "git push -f=value origin main",
+    "git push origin --force",
+    "git push origin main -f",
+    "git push -uf origin main",
+    "git push -fuo --force origin main",
+    "git push -4uf origin main",
+    "git push -6f origin main",
+    "git push origin --follow-tags -f",
+    "git --git-dir=/repo push -f origin main",
+  ]) {
+    assert.equal(invokesBlockedGitCommand(resource), true, resource);
+  }
+});
+
+test("does not block non-force push options, values, refspecs, or options after --", () => {
+  for (const resource of [
+    "git push",
+    "git push origin main",
+    "git push -u origin main",
+    "git push --force-if-includes origin main",
+    "git push --mirror",
+    "git push origin +main",
+    "git push -o --force origin main",
+    "git push -uo --force origin main",
+    "git push -uof origin main",
+    "git push -uo -ff origin main",
+    "git push -oflag origin main",
+    "git push --push-option --force origin main",
+    "git push --push-option=--force origin main",
+    "git push --receive-pack --force origin main",
+    "git push --receive-pack=--force origin main",
+    "git push --exec=--force origin main",
+    "git push --repo --force origin main",
+    "git push --repo=--force origin main",
+    "git push -Df origin main",
+    "git push -tf origin main",
+    "git push --recurse-submodules=on-demand origin main",
+    "git push origin --follow-tags main",
+    "git push origin -- --force",
+    "git push origin -- -f",
+    "echo git push --force",
+    "git --unknown push --force",
+  ]) {
+    assert.equal(invokesBlockedGitCommand(resource), false, resource);
+  }
+});
+
 test("denies the complete shell evaluation if any resource is blocked", () => {
   assert.equal(
     shouldDenyShellEvaluation("shell", ["printf safe", "git reset --hard"]),
@@ -98,4 +154,55 @@ test("denies the complete shell evaluation if any resource is blocked", () => {
     false
   );
   assert.equal(shouldDenyShellEvaluation("read", ["git reset --hard"]), false);
+  assert.equal(shouldDenyShellEvaluation("read", ["git push --force"]), false);
+  assert.equal(
+    shouldDenyShellEvaluation("shell", [
+      "git push origin main",
+      "git push --force",
+      "printf safe",
+    ]),
+    true
+  );
+});
+
+test("the permission.evaluate hook only changes force-push shell evaluations", async () => {
+  interface Evaluation {
+    action: string;
+    resources: readonly string[];
+    effect: string;
+    message: string;
+  }
+  let evaluate: ((evaluation: Evaluation) => void) | undefined;
+  const context = {
+    permission: {
+      hook: (name: string, callback: (evaluation: Evaluation) => void) => {
+        assert.equal(name, "evaluate");
+        evaluate = callback;
+      },
+    },
+  } as unknown as Parameters<typeof plugin.setup>[0];
+
+  await plugin.setup(context);
+  assert.ok(evaluate);
+
+  for (const effect of ["allow", "ask", "deny"]) {
+    const normalPush = {
+      action: "shell",
+      resources: ["git push origin main"],
+      effect,
+      message: "unchanged",
+    };
+    evaluate(normalPush);
+    assert.equal(normalPush.effect, effect);
+    assert.equal(normalPush.message, "unchanged");
+  }
+
+  const forcePush = {
+    action: "shell",
+    resources: ["git push --force"],
+    effect: "ask",
+    message: "initial",
+  };
+  evaluate(forcePush);
+  assert.equal(forcePush.effect, "deny");
 });

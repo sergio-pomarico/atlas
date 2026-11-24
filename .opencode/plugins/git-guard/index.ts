@@ -34,6 +34,16 @@ const optionsWithInlineValue = new Set([
   "--attr-source",
   "--list-cmds",
 ]);
+const forcePushOptions = new Set(["-f", "--force", "--force-with-lease"]);
+const pushOptionsWithValue = new Set([
+  "-o",
+  "--push-option",
+  "--receive-pack",
+  "--exec",
+  "--repo",
+  "--recurse-submodules",
+]);
+const shortPushOption = /^-([uvqnd46f]*)(?:o(.*))?$/;
 
 interface TokenizerState {
   tokens: string[];
@@ -170,18 +180,68 @@ function gitSubcommand(
 
 const blockedSubcommands = new Set(["reset", "clean", "restore"]);
 
-function isBlockedSubcommand(
+function parseShortPushOption(option: string): {
+  hasForce: boolean;
+  takesNextArgument: boolean;
+} {
+  const [, flags, attachedValue] = shortPushOption.exec(option) ?? [];
+  return {
+    hasForce: flags?.includes("f") ?? false,
+    takesNextArgument: attachedValue === "",
+  };
+}
+
+function pushOptionAdvance(option: string, takesNextArgument: boolean): number {
+  if (pushOptionsWithValue.has(option)) {
+    return 2;
+  }
+  if (takesNextArgument) {
+    return 2;
+  }
+  return 1;
+}
+
+function isForcePushOption(option: string, hasShortForce: boolean): boolean {
+  const optionName = option.split("=", 1)[0];
+  return forcePushOptions.has(optionName) || hasShortForce;
+}
+
+function hasForcePushOption(tokens: string[], commandIndex: number): boolean {
+  let index = commandIndex + 1;
+  while (index < tokens.length) {
+    const option = tokens[index];
+    if (option === "--") {
+      return false;
+    }
+    const shortOption = parseShortPushOption(option);
+    if (isForcePushOption(option, shortOption.hasForce)) {
+      return true;
+    }
+    index += pushOptionAdvance(option, shortOption.takesNextArgument);
+  }
+  return false;
+}
+
+function hasCheckoutPathspec(tokens: string[], commandIndex: number): boolean {
+  const separator = tokens.indexOf("--", commandIndex + 1);
+  return separator >= 0 && separator < tokens.length - 1;
+}
+
+type CommandBlocker = (tokens: string[], commandIndex: number) => boolean;
+
+const commandBlockers = new Map<string, CommandBlocker>([
+  ["checkout", hasCheckoutPathspec],
+  ["push", hasForcePushOption],
+]);
+
+function isBlockedGitCommand(
   tokens: string[],
   command: { name: string; index: number }
 ): boolean {
-  if (blockedSubcommands.has(command.name)) {
-    return true;
-  }
-  if (command.name !== "checkout") {
-    return false;
-  }
-  const separator = tokens.indexOf("--", command.index + 1);
-  return separator >= 0 && separator < tokens.length - 1;
+  return (
+    blockedSubcommands.has(command.name) ||
+    (commandBlockers.get(command.name)?.(tokens, command.index) ?? false)
+  );
 }
 
 function matchesBlockedGitInvocation(tokens: string[]): boolean {
@@ -189,10 +249,7 @@ function matchesBlockedGitInvocation(tokens: string[]): boolean {
     return false;
   }
   const command = gitSubcommand(tokens);
-  if (!command) {
-    return false;
-  }
-  return isBlockedSubcommand(tokens, command);
+  return command ? isBlockedGitCommand(tokens, command) : false;
 }
 
 export function invokesBlockedGitCommand(resource: string): boolean {
@@ -213,7 +270,7 @@ export default Plugin.define({
       if (shouldDenyShellEvaluation(evaluation.action, evaluation.resources)) {
         evaluation.effect = "deny";
         evaluation.message =
-          "Atlas blocks git reset, clean, and restore, and git checkout -- <path> shell commands.";
+          "Atlas blocks git reset, clean, and restore, git checkout -- <path>, and force git push shell commands.";
       }
     });
   },
