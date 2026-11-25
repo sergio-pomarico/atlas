@@ -80,7 +80,7 @@ export function EmailLayout({
   );
 }
 
-export function EmailHeader() {
+function EmailHeader() {
   return (
     <tr>
       <td align="center" style={headerStyle} />
