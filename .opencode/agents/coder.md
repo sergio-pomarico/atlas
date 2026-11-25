@@ -1,7 +1,7 @@
 ---
 description: "Implements authorized Atlas code or configuration changes and corrections, runs relevant verification, and returns scoped evidence; not for broad investigation or independent review."
 mode: subagent
-model: "openai/gpt-5.6-terra#medium"
+model: "openai/gpt-6-luna#high"
 permissions:
   - action: "*"
     resource: "*"
@@ -50,75 +50,15 @@ permissions:
     effect: deny
   - action: shell
     resource: "*"
+    effect: allow
+  - action: shell
+    resource: "git push *"
     effect: ask
   - action: shell
-    resource: "git status *"
-    effect: allow
+    resource: "gh pr create *"
+    effect: ask
   - action: shell
-    resource: "git diff *"
-    effect: allow
-  - action: shell
-    resource: "git log *"
-    effect: allow
-  - action: shell
-    resource: "git branch --show-current"
-    effect: allow
-  - action: shell
-    resource: "git rev-parse *"
-    effect: allow
-  - action: shell
-    resource: "git rev-list *"
-    effect: allow
-  - action: shell
-    resource: "git show-ref *"
-    effect: allow
-  - action: shell
-    resource: "git ls-remote *"
-    effect: allow
-  - action: shell
-    resource: "pnpm run check *"
-    effect: allow
-  - action: shell
-    resource: "pnpm run test *"
-    effect: allow
-  - action: shell
-    resource: "pnpm run type-check *"
-    effect: allow
-  - action: shell
-    resource: "pnpm run build *"
-    effect: allow
-  - action: shell
-    resource: "pnpm --filter @atlas/api type-check *"
-    effect: allow
-  - action: shell
-    resource: "pnpm --filter @atlas/api test *"
-    effect: allow
-  - action: shell
-    resource: "pnpm --filter @atlas/client build *"
-    effect: allow
-  - action: shell
-    resource: "pnpm --filter @atlas/client test *"
-    effect: allow
-  - action: shell
-    resource: "pnpm exec fallow health *"
-    effect: allow
-  - action: shell
-    resource: "rm *"
-    effect: deny
-  - action: shell
-    resource: "rmdir *"
-    effect: deny
-  - action: shell
-    resource: "git reset *"
-    effect: deny
-  - action: shell
-    resource: "git clean *"
-    effect: deny
-  - action: shell
-    resource: "git restore *"
-    effect: deny
-  - action: shell
-    resource: "git checkout -- *"
+    resource: "codegraph*"
     effect: deny
   - action: shell
     resource: "git pull *"
@@ -131,12 +71,6 @@ permissions:
     effect: deny
   - action: shell
     resource: "git stash *"
-    effect: deny
-  - action: shell
-    resource: "git push --force*"
-    effect: deny
-  - action: shell
-    resource: "git push -f*"
     effect: deny
   - action: subagent
     resource: "*"
