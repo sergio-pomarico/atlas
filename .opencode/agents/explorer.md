@@ -1,7 +1,7 @@
 ---
 description: "Investigates Atlas for Build and independently reviews acceptance criteria, regressions, and contracts before Reviewer, without editing or running tests."
 mode: subagent
-model: "openai/gpt-5.6-terra#high"
+model: "openai/gpt-6.1-terra#high"
 permissions:
   - action: "*"
     resource: "*"
@@ -33,15 +33,6 @@ permissions:
   - action: websearch
     resource: "*"
     effect: allow
-  - action: external_directory
-    resource: "*"
-    effect: deny
-  - action: edit
-    resource: "*"
-    effect: deny
-  - action: shell
-    resource: "*"
-    effect: deny
   - action: shell
     resource: "git status --short"
     effect: allow
@@ -72,9 +63,6 @@ permissions:
   - action: shell
     resource: "git diff --no-ext-diff --no-textconv --check -- *"
     effect: allow
-  - action: subagent
-    resource: "*"
-    effect: deny
 ---
 
 You are the Atlas investigator and functional reviewer. Investigate for the primary Build agent or independently review a stable result; never edit, run tests/builds/scripts, or delegate. Reviewer retains the final maintainability audit under `.opencode/references/review.md`.

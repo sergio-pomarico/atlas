@@ -1,45 +1,37 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "permission": {
-    "cg_*": "deny",
-    "read": {
-      "*": "allow",
-      "*.env": "deny",
-      "*.env.*": "deny",
-      "*.env.example": "allow"
-    },
-    "edit": {
-      "*.env": "deny",
-      "*.env.*": "deny"
-    },
-    "bash": {
-      "codegraph*": "deny",
-      "rm *": "deny",
-      "rmdir *": "deny",
-      "git reset --hard*": "deny",
-      "git clean *": "deny",
-      "git checkout -- *": "deny",
-      "git restore *": "deny"
-    },
-    "external_directory": "deny",
-    "webfetch": "ask",
-    "websearch": "ask"
-  },
+  "permissions": [
+    { "action": "cg_*", "resource": "*", "effect": "deny" },
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
+    { "action": "edit", "resource": "*.env", "effect": "deny" },
+    { "action": "edit", "resource": "*.env.*", "effect": "deny" },
+    { "action": "shell", "resource": "codegraph*", "effect": "deny" },
+    { "action": "external_directory", "resource": "*", "effect": "deny" },
+    { "action": "webfetch", "resource": "*", "effect": "ask" },
+    { "action": "websearch", "resource": "*", "effect": "ask" }
+  ],
   "default_agent": "build",
-  "subagent_depth": 1,
+  "experimental": {
+    "subagent_depth": 1
+  },
   "mcp": {
-    "cg": {
-      "type": "local",
-      "command": ["codegraph", "serve", "--mcp"],
-      "environment": {
-        "CODEGRAPH_MCP_TOOLS": "explore"
+    "servers": {
+      "cg": {
+        "type": "local",
+        "command": ["codegraph", "serve", "--mcp"],
+        "environment": {
+          "CODEGRAPH_MCP_TOOLS": "explore"
+        },
+        "disabled": false
       },
-      "enabled": true
-    },
-    "engram": {
-      "type": "local",
-      "command": ["engram", "mcp"],
-      "enabled": true
+      "engram": {
+        "type": "local",
+        "command": ["engram", "mcp"],
+        "disabled": false
+      }
     }
   }
 }
